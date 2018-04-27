@@ -10,14 +10,25 @@ import Cocoa
 import SlackKit
 
 class TPITextualSlack: NSObject, THOPluginProtocol {
+    lazy var slackClient = masterController().world.createClient(with: IRCClientConfig(dictionary: ["connectionName": "Slack", "serverAddress": "textual.slack.example"]))
+
     func pluginLoadedIntoMemory() {
         let bot = SlackKit()
         bot.addRTMBotWithAPIToken("XXX")
-        bot.notificationForEvent(.message) { (event, _) in
-            guard let message = event.message, let text = message.text else {
+        bot.notificationForEvent(.message) { [weak self] (event, client) in
+            guard let message = event.message else {
                 return
             }
-            print(text)
+            self?.didRecieveSlackMessage(message: message)
         }
+    }
+
+    func didRecieveSlackMessage(message: Message) {
+        guard let slackChannel = message.channel, let slackUser = message.username, let text = message.text else {
+            return
+        }
+        print(text)
+        let ircChannel = self.slackClient.findChannelOrCreate(slackChannel, isPrivateMessage: true)
+        self.slackClient.print(text, by: slackUser, in: ircChannel, as: TVCLogLineType.privateMessageType, command: TVCLogLineDefaultCommandValue)
     }
 }
