@@ -250,7 +250,7 @@
 				);
 				HEADER_SEARCH_PATHS = "/Applications/Textual.app/Contents/Headers/**";
 				INFOPLIST_FILE = TextualSlack/Info.plist;
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Group Containers/com.codeux.apps.textual/Library/Application Support/Textual/Extensions";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -258,7 +258,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.rectalogic.TextualSlack;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
+				SKIP_INSTALL = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "TextualSlack-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
@@ -279,7 +279,7 @@
 				);
 				HEADER_SEARCH_PATHS = "/Applications/Textual.app/Contents/Headers/**";
 				INFOPLIST_FILE = TextualSlack/Info.plist;
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Group Containers/com.codeux.apps.textual/Library/Application Support/Textual/Extensions";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -287,7 +287,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.rectalogic.TextualSlack;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
+				SKIP_INSTALL = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "TextualSlack-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
 				WRAPPER_EXTENSION = bundle;
