@@ -244,7 +244,10 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				FRAMEWORK_SEARCH_PATHS = "/Applications/Textual.app/Contents/Frameworks/**";
+				FRAMEWORK_SEARCH_PATHS = (
+					"/Applications/Textual.app/Contents/Frameworks/**",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
 				HEADER_SEARCH_PATHS = "/Applications/Textual.app/Contents/Headers/**";
 				INFOPLIST_FILE = TextualSlack/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
@@ -270,7 +273,10 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				FRAMEWORK_SEARCH_PATHS = "/Applications/Textual.app/Contents/Frameworks/**";
+				FRAMEWORK_SEARCH_PATHS = (
+					"/Applications/Textual.app/Contents/Frameworks/**",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
 				HEADER_SEARCH_PATHS = "/Applications/Textual.app/Contents/Headers/**";
 				INFOPLIST_FILE = TextualSlack/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";

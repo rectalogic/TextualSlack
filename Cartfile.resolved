@@ -1,0 +1,8 @@
+github "SlackKit/SKClient" "4.1.0"
+github "SlackKit/SKCore" "4.1.1"
+github "SlackKit/SKRTMAPI" "4.1.2"
+github "SlackKit/SKServer" "4.1.0"
+github "SlackKit/SKWebAPI" "4.1.3"
+github "SlackKit/SlackKit" "4.1.0"
+github "daltoniam/Starscream" "3.0.5"
+github "httpswift/swifter" "1c19479c84873cbd5a0bbdfbfb7a043d9b08d9ef"
