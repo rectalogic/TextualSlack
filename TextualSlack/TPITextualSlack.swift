@@ -10,7 +10,12 @@ import Cocoa
 import SlackKit
 
 class TPITextualSlack: NSObject, THOPluginProtocol {
-    lazy var slackClient = masterController().world.createClient(with: IRCClientConfig(dictionary: ["connectionName": "Slack", "serverAddress": "textual.slack.example"]))
+    lazy var slackIRCClient: IRCClient = {
+        let config = IRCClientConfigMutable()
+        config.connectionName = "Slack"
+        config.serverList = [IRCServer(dictionary: ["serverAddress": "textual.slack.example"])]
+        return masterController().world.createClient(with: config)
+    }()
 
     func pluginLoadedIntoMemory() {
         let bot = SlackKit()
@@ -19,7 +24,9 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             guard let message = event.message else {
                 return
             }
-            self?.didRecieveSlackMessage(message: message)
+            DispatchQueue.main.async {
+                self?.didRecieveSlackMessage(message: message)
+            }
         }
     }
 
@@ -28,7 +35,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             return
         }
         print(text)
-        let ircChannel = self.slackClient.findChannelOrCreate(slackChannel, isPrivateMessage: true)
-        self.slackClient.print(text, by: slackUser, in: ircChannel, as: TVCLogLineType.privateMessageType, command: TVCLogLineDefaultCommandValue)
+        let ircChannel = self.slackIRCClient.findChannelOrCreate(slackChannel, isPrivateMessage: true)
+        self.slackIRCClient.print(text, by: slackUser, in: ircChannel, as: TVCLogLineType.privateMessageType, command: TVCLogLineDefaultCommandValue)
     }
 }
