@@ -9,33 +9,48 @@
 import Cocoa
 import SlackKit
 
+let serverAddress = "textual.slack.example"
+
 class TPITextualSlack: NSObject, THOPluginProtocol {
     lazy var slackIRCClient: IRCClient = {
+        for client in masterController().world.clientList {
+            if client.config.serverList.first?.serverAddress == serverAddress {
+                return client
+            }
+        }
         let config = IRCClientConfigMutable()
         config.connectionName = "Slack"
-        config.serverList = [IRCServer(dictionary: ["serverAddress": "textual.slack.example"])]
+        config.serverList = [IRCServer(dictionary: ["serverAddress": serverAddress])]
         return masterController().world.createClient(with: config)
     }()
+    let slackBot = SlackKit()
 
     func pluginLoadedIntoMemory() {
-        let bot = SlackKit()
-        bot.addRTMBotWithAPIToken("XXX")
-        bot.notificationForEvent(.message) { [weak self] (event, client) in
-            guard let message = event.message else {
+        slackBot.addRTMBotWithAPIToken("XXX", options: RTMOptions(reconnect: true))
+        slackBot.notificationForEvent(.message) { [weak self] (event, clientConnection) in
+            guard let message = event.message, let client = clientConnection?.client else {
                 return
             }
             DispatchQueue.main.async {
-                self?.didRecieveSlackMessage(message: message)
+                self?.didRecieveSlackMessage(message: message, client: client)
             }
         }
     }
 
-    func didRecieveSlackMessage(message: Message) {
-        guard let slackChannel = message.channel, let slackUser = message.username, let text = message.text else {
+    func didRecieveSlackMessage(message: Message, client: Client) {
+        guard let slackChannel = message.channel, let slackUser = message.user, let text = message.text else {
             return
         }
-        print(text)
-        let ircChannel = self.slackIRCClient.findChannelOrCreate(slackChannel, isPrivateMessage: true)
-        self.slackIRCClient.print(text, by: slackUser, in: ircChannel, as: TVCLogLineType.privateMessageType, command: TVCLogLineDefaultCommandValue)
+        let ircChannel = self.slackIRCClient.findChannelOrCreate((client.channels[slackChannel]?.name)!, isPrivateMessage: true)
+        let receivedAt: Date
+        if let ts = message.ts, let tv = Double(ts) {
+            receivedAt = Date(timeIntervalSince1970: tv / 1000.0)
+        }
+        else {
+            receivedAt = Date()
+        }
+        self.slackIRCClient.print(text, by: client.users[slackUser]?.name, in: ircChannel, as: TVCLogLineType.privateMessageType, command: TVCLogLineDefaultCommandValue, receivedAt: receivedAt, isEncrypted: false, referenceMessage: nil) { (context) in
+            self.slackIRCClient.setUnreadStateFor(ircChannel!)
+        }
     }
 }
