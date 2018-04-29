@@ -12,6 +12,8 @@ import SlackKit
 let serverAddress = "textual.slack.example"
 
 class TPITextualSlack: NSObject, THOPluginProtocol {
+    @IBOutlet var preferencesPane: NSView!
+
     lazy var slackIRCClient: IRCClient = {
         for client in masterController().world.clientList {
             if client.config.serverList.first?.serverAddress == serverAddress {
@@ -26,13 +28,18 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
     let slackBot = SlackKit()
 
     func pluginLoadedIntoMemory() {
-        slackBot.addRTMBotWithAPIToken("XXX", options: RTMOptions(reconnect: true))
-        slackBot.notificationForEvent(.message) { [weak self] (event, clientConnection) in
-            guard let message = event.message, let client = clientConnection?.client else {
-                return
-            }
-            DispatchQueue.main.async {
-                self?.didRecieveSlackMessage(message: message, client: client)
+        DispatchQueue.main.sync {
+            _ = Bundle(for: type(of: self)).loadNibNamed("TextualSlack", owner: self, topLevelObjects: nil)
+        }
+        if let botToken = TPCPreferencesUserDefaults.shared().string(forKey: "Slack Extension -> Bot Token") {
+            slackBot.addRTMBotWithAPIToken(botToken, options: RTMOptions(reconnect: true))
+            slackBot.notificationForEvent(.message) { [weak self] (event, clientConnection) in
+                guard let message = event.message, let client = clientConnection?.client else {
+                    return
+                }
+                DispatchQueue.main.async {
+                    self?.didRecieveSlackMessage(message: message, client: client)
+                }
             }
         }
     }
@@ -51,6 +58,18 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         }
         self.slackIRCClient.print(text, by: client.users[slackUser]?.name, in: ircChannel, as: TVCLogLineType.privateMessageType, command: TVCLogLineDefaultCommandValue, receivedAt: receivedAt, isEncrypted: false, referenceMessage: nil) { (context) in
             self.slackIRCClient.setUnreadStateFor(ircChannel!)
+        }
+    }
+
+    var pluginPreferencesPaneView: NSView {
+        get {
+            return preferencesPane
+        }
+    }
+
+    var pluginPreferencesPaneMenuItemName: String {
+        get {
+            return "Textual Slack"
         }
     }
 }

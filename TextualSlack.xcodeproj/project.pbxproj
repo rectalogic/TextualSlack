@@ -23,6 +23,7 @@
 		C25941BD2093B78C0053D4AC /* SlackKit.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = C25941A12093B2D40053D4AC /* SlackKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		C25941BE2093B78C0053D4AC /* Starscream.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = C25941A52093B2D40053D4AC /* Starscream.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		C25941BF2093B78C0053D4AC /* Swifter.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = C25941A02093B2D40053D4AC /* Swifter.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		C25941C12095533D0053D4AC /* TextualSlack.xib in Resources */ = {isa = PBXBuildFile; fileRef = C25941C02095533D0053D4AC /* TextualSlack.xib */; };
 		C2F96426209278DE00D68C93 /* TPITextualSlack.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2F96425209278DE00D68C93 /* TPITextualSlack.swift */; };
 /* End PBXBuildFile section */
 
@@ -55,6 +56,7 @@
 		C25941A42093B2D40053D4AC /* SKRTMAPI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SKRTMAPI.framework; path = Carthage/Build/Mac/SKRTMAPI.framework; sourceTree = "<group>"; };
 		C25941A52093B2D40053D4AC /* Starscream.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Starscream.framework; path = Carthage/Build/Mac/Starscream.framework; sourceTree = "<group>"; };
 		C25941A62093B2D40053D4AC /* SKClient.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SKClient.framework; path = Carthage/Build/Mac/SKClient.framework; sourceTree = "<group>"; };
+		C25941C02095533D0053D4AC /* TextualSlack.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = TextualSlack.xib; path = TextualSlack/TextualSlack.xib; sourceTree = "<group>"; };
 		C2F9641B2092781500D68C93 /* TextualSlack.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TextualSlack.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		C2F9641E2092781500D68C93 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C2F96424209278DE00D68C93 /* TextualSlack-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TextualSlack-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -99,6 +101,7 @@
 			isa = PBXGroup;
 			children = (
 				C2F96425209278DE00D68C93 /* TPITextualSlack.swift */,
+				C25941C02095533D0053D4AC /* TextualSlack.xib */,
 				C2F96424209278DE00D68C93 /* TextualSlack-Bridging-Header.h */,
 				C2F9641D2092781500D68C93 /* TextualSlack */,
 				C2F9641C2092781500D68C93 /* Products */,
@@ -180,6 +183,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C25941C12095533D0053D4AC /* TextualSlack.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
