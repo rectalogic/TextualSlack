@@ -15,35 +15,185 @@
         <customView translatesAutoresizingMaskIntoConstraints="NO" id="c22-O7-iKe">
             <rect key="frame" x="0.0" y="0.0" width="590" height="150"/>
             <subviews>
-                <textField identifier="SlackBotToken" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="scA-ep-ozJ">
-                    <rect key="frame" x="147" y="64" width="425" height="22"/>
-                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="J8e-RD-rKX">
+                <scrollView autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="X3M-oL-LmY">
+                    <rect key="frame" x="20" y="52" width="550" height="78"/>
+                    <clipView key="contentView" id="OaS-Z6-oN2">
+                        <rect key="frame" x="1" y="23" width="548" height="54"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnReordering="NO" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" headerView="xVo-Xe-OSb" viewBased="YES" id="gY6-Lj-e5u">
+                                <rect key="frame" x="0.0" y="0.0" width="548" height="54"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <size key="intercellSpacing" width="3" height="2"/>
+                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                <tableColumns>
+                                    <tableColumn identifier="" width="116" minWidth="40" maxWidth="1000" id="ugM-vT-fd1">
+                                        <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Name">
+                                            <font key="font" metaFont="smallSystem"/>
+                                            <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                        </tableHeaderCell>
+                                        <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" title="Text Cell" id="zWY-W0-o6U">
+                                            <font key="font" metaFont="system"/>
+                                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                        <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                        <prototypeCellViews>
+                                            <tableCellView identifier="Name" id="JhH-M9-jUF">
+                                                <rect key="frame" x="1" y="1" width="116" height="17"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                <subviews>
+                                                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="Sgx-Sm-Cj8">
+                                                        <rect key="frame" x="0.0" y="0.0" width="116" height="17"/>
+                                                        <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" title="Table View Cell" id="F50-3y-5l8">
+                                                            <font key="font" metaFont="system"/>
+                                                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                        </textFieldCell>
+                                                        <connections>
+                                                            <binding destination="JhH-M9-jUF" name="value" keyPath="objectValue.name" id="KRe-HJ-iOY">
+                                                                <dictionary key="options">
+                                                                    <bool key="NSConditionallySetsEditable" value="YES"/>
+                                                                </dictionary>
+                                                            </binding>
+                                                        </connections>
+                                                    </textField>
+                                                </subviews>
+                                                <constraints>
+                                                    <constraint firstItem="Sgx-Sm-Cj8" firstAttribute="leading" secondItem="JhH-M9-jUF" secondAttribute="leading" constant="2" id="Tb1-nb-gG9"/>
+                                                    <constraint firstItem="Sgx-Sm-Cj8" firstAttribute="centerX" secondItem="JhH-M9-jUF" secondAttribute="centerX" id="dYw-dc-agc"/>
+                                                    <constraint firstItem="Sgx-Sm-Cj8" firstAttribute="centerY" secondItem="JhH-M9-jUF" secondAttribute="centerY" id="i29-KM-XP3"/>
+                                                </constraints>
+                                                <connections>
+                                                    <outlet property="textField" destination="Sgx-Sm-Cj8" id="cHj-AE-a9a"/>
+                                                </connections>
+                                            </tableCellView>
+                                        </prototypeCellViews>
+                                        <connections>
+                                            <binding destination="CTe-Lv-tdD" name="value" keyPath="arrangedObjects" id="HJh-AW-cbQ"/>
+                                        </connections>
+                                    </tableColumn>
+                                    <tableColumn identifier="" width="426" minWidth="40" maxWidth="1000" id="4AA-EF-9Gr">
+                                        <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Slack Bot API Token">
+                                            <font key="font" metaFont="smallSystem"/>
+                                            <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                        </tableHeaderCell>
+                                        <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" title="Text Cell" id="LgF-4Y-yDo">
+                                            <font key="font" metaFont="system"/>
+                                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                        <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                        <prototypeCellViews>
+                                            <tableCellView identifier="SlackBotToken" id="4Ds-NP-8nb">
+                                                <rect key="frame" x="120" y="1" width="426" height="17"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                <subviews>
+                                                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="8dg-cJ-fxc">
+                                                        <rect key="frame" x="0.0" y="0.0" width="426" height="17"/>
+                                                        <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" title="Table View Cell" id="eXB-la-ouS">
+                                                            <font key="font" metaFont="system"/>
+                                                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                        </textFieldCell>
+                                                        <connections>
+                                                            <binding destination="4Ds-NP-8nb" name="value" keyPath="objectValue.botToken" id="Poh-J2-6w9">
+                                                                <dictionary key="options">
+                                                                    <bool key="NSConditionallySetsEditable" value="YES"/>
+                                                                </dictionary>
+                                                            </binding>
+                                                        </connections>
+                                                    </textField>
+                                                </subviews>
+                                                <constraints>
+                                                    <constraint firstItem="8dg-cJ-fxc" firstAttribute="centerY" secondItem="4Ds-NP-8nb" secondAttribute="centerY" id="bOJ-lO-Pye"/>
+                                                    <constraint firstItem="8dg-cJ-fxc" firstAttribute="leading" secondItem="4Ds-NP-8nb" secondAttribute="leading" constant="2" id="p4e-O7-VhA"/>
+                                                    <constraint firstItem="8dg-cJ-fxc" firstAttribute="centerX" secondItem="4Ds-NP-8nb" secondAttribute="centerX" id="rsk-dI-dde"/>
+                                                </constraints>
+                                                <connections>
+                                                    <outlet property="textField" destination="8dg-cJ-fxc" id="ufh-DI-jkk"/>
+                                                </connections>
+                                            </tableCellView>
+                                        </prototypeCellViews>
+                                        <connections>
+                                            <binding destination="CTe-Lv-tdD" name="value" keyPath="arrangedObjects" id="eIa-f4-Ffl"/>
+                                        </connections>
+                                    </tableColumn>
+                                </tableColumns>
+                            </tableView>
+                        </subviews>
+                    </clipView>
+                    <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="Cow-rH-0ln">
+                        <rect key="frame" x="1" y="119" width="223" height="15"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </scroller>
+                    <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="iVd-gg-SyZ">
+                        <rect key="frame" x="224" y="17" width="15" height="102"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </scroller>
+                    <tableHeaderView key="headerView" id="xVo-Xe-OSb">
+                        <rect key="frame" x="0.0" y="0.0" width="548" height="23"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </tableHeaderView>
+                </scrollView>
+                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="yMV-y6-aZw">
+                    <rect key="frame" x="20" y="19" width="24" height="26"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="24" id="OSb-6S-dJd"/>
+                        <constraint firstAttribute="width" constant="24" id="m3E-ot-zA8"/>
+                    </constraints>
+                    <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="overlaps" alignment="center" lineBreakMode="truncatingTail" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="P29-2v-bdj">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
-                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                    </textFieldCell>
+                    </buttonCell>
                     <connections>
-                        <binding destination="sJN-kH-Wog" name="value" keyPath="values.Slack Extension -&gt; Bot Token" id="aiq-D1-CkD"/>
+                        <action selector="add:" target="CTe-Lv-tdD" id="KzV-PZ-1dt"/>
                     </connections>
-                </textField>
-                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="D9b-MN-sYR">
-                    <rect key="frame" x="18" y="67" width="123" height="17"/>
-                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Slack Bot API token" id="DaZ-Qy-iRs">
+                </button>
+                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ciK-xc-YuD">
+                    <rect key="frame" x="52" y="19" width="24" height="26"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="24" id="29u-La-epn"/>
+                        <constraint firstAttribute="height" constant="24" id="3Bc-Sj-9oo"/>
+                    </constraints>
+                    <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="overlaps" alignment="center" lineBreakMode="truncatingTail" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="GTf-wJ-vaZ">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
-                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                    </textFieldCell>
-                </textField>
+                    </buttonCell>
+                    <connections>
+                        <action selector="remove:" target="CTe-Lv-tdD" id="NUL-Pa-AgK"/>
+                    </connections>
+                </button>
             </subviews>
             <constraints>
-                <constraint firstItem="D9b-MN-sYR" firstAttribute="leading" secondItem="c22-O7-iKe" secondAttribute="leading" constant="20" id="4ru-aR-9HB"/>
-                <constraint firstItem="D9b-MN-sYR" firstAttribute="centerY" secondItem="c22-O7-iKe" secondAttribute="centerY" id="9I5-Xy-iqU"/>
-                <constraint firstItem="scA-ep-ozJ" firstAttribute="leading" secondItem="D9b-MN-sYR" secondAttribute="trailing" constant="8" id="O5b-an-e78"/>
-                <constraint firstItem="scA-ep-ozJ" firstAttribute="baseline" secondItem="D9b-MN-sYR" secondAttribute="baseline" id="dXJ-4o-VeZ"/>
-                <constraint firstAttribute="trailing" secondItem="scA-ep-ozJ" secondAttribute="trailing" constant="18" id="gPI-nV-DhZ"/>
+                <constraint firstAttribute="trailing" secondItem="X3M-oL-LmY" secondAttribute="trailing" constant="20" symbolic="YES" id="5zc-1y-XIE"/>
+                <constraint firstItem="yMV-y6-aZw" firstAttribute="leading" secondItem="X3M-oL-LmY" secondAttribute="leading" id="7zj-K9-le4"/>
+                <constraint firstItem="ciK-xc-YuD" firstAttribute="top" secondItem="yMV-y6-aZw" secondAttribute="top" id="Jrw-yn-Ji1"/>
+                <constraint firstItem="X3M-oL-LmY" firstAttribute="top" secondItem="c22-O7-iKe" secondAttribute="top" constant="20" symbolic="YES" id="PN5-1c-nr8"/>
+                <constraint firstItem="X3M-oL-LmY" firstAttribute="leading" secondItem="c22-O7-iKe" secondAttribute="leading" constant="20" symbolic="YES" id="dC7-Nf-NMk"/>
+                <constraint firstItem="yMV-y6-aZw" firstAttribute="top" secondItem="X3M-oL-LmY" secondAttribute="bottom" constant="8" symbolic="YES" id="ecg-Xg-00a"/>
+                <constraint firstAttribute="bottom" secondItem="yMV-y6-aZw" secondAttribute="bottom" constant="20" symbolic="YES" id="lxP-rq-Xhv"/>
+                <constraint firstItem="yMV-y6-aZw" firstAttribute="leading" secondItem="c22-O7-iKe" secondAttribute="leading" constant="20" symbolic="YES" id="rFO-EH-J1K"/>
+                <constraint firstItem="ciK-xc-YuD" firstAttribute="leading" secondItem="yMV-y6-aZw" secondAttribute="trailing" constant="8" symbolic="YES" id="vxr-ZL-HzS"/>
             </constraints>
             <point key="canvasLocation" x="158" y="166"/>
         </customView>
+        <arrayController automaticallyPreparesContent="YES" id="CTe-Lv-tdD">
+            <connections>
+                <binding destination="sJN-kH-Wog" name="contentArray" keyPath="values.Slack Extension -&gt; SlackBots" id="3gF-vt-Ia3">
+                    <dictionary key="options">
+                        <bool key="NSHandlesContentAsCompoundValue" value="YES"/>
+                    </dictionary>
+                </binding>
+            </connections>
+        </arrayController>
         <userDefaultsController id="sJN-kH-Wog" customClass="TPCPreferencesUserDefaultsController"/>
     </objects>
+    <resources>
+        <image name="NSAddTemplate" width="11" height="11"/>
+        <image name="NSRemoveTemplate" width="11" height="11"/>
+    </resources>
 </document>

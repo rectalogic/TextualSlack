@@ -31,17 +31,20 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         DispatchQueue.main.sync {
             _ = Bundle(for: type(of: self)).loadNibNamed("TextualSlack", owner: self, topLevelObjects: nil)
         }
-        //XXX support multiple bots, each with "autoconnect" bool and username override
-        //XXX NSTableView bound to NSArrayController on user defaults https://stackoverflow.com/questions/28820337/nstableview-bound-to-nsarraycontroller-doesnt-save-changes
-        if let botToken = TPCPreferencesUserDefaults.shared().string(forKey: "Slack Extension -> Bot Token") {
-            slackBot.addRTMBotWithAPIToken(botToken, options: RTMOptions(reconnect: true))
-            slackBot.addWebAPIAccessWithToken(botToken)
-            slackBot.notificationForEvent(.message) { [weak self] (event, clientConnection) in
-                guard let message = event.message, let client = clientConnection?.client else {
-                    return
-                }
-                DispatchQueue.main.async {
-                    self?.didRecieveSlackMessage(message: message, client: client)
+        if let botTokens = TPCPreferencesUserDefaults.shared().array(forKey: "Slack Extension -> SlackBots") as! [[String : String]]? {
+            for botToken in botTokens {
+                //botToken["name"]
+                if let token = botToken["botToken"] {
+                    slackBot.addRTMBotWithAPIToken(token, options: RTMOptions(reconnect: true))
+                    slackBot.addWebAPIAccessWithToken(token)
+                    slackBot.notificationForEvent(.message) { [weak self] (event, clientConnection) in
+                        guard let message = event.message, let client = clientConnection?.client else {
+                            return
+                        }
+                        DispatchQueue.main.async {
+                            self?.didRecieveSlackMessage(message: message, client: client)
+                        }
+                    }
                 }
             }
         }
