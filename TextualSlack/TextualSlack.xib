@@ -21,7 +21,7 @@
                         <rect key="frame" x="1" y="0.0" width="548" height="77"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnReordering="NO" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" headerView="xVo-Xe-OSb" viewBased="YES" id="gY6-Lj-e5u">
+                            <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnReordering="NO" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" headerView="xVo-Xe-OSb" id="gY6-Lj-e5u">
                                 <rect key="frame" x="0.0" y="0.0" width="548" height="54"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <size key="intercellSpacing" width="3" height="2"/>
@@ -40,39 +40,8 @@
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                         </textFieldCell>
                                         <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
-                                        <prototypeCellViews>
-                                            <tableCellView id="JhH-M9-jUF">
-                                                <rect key="frame" x="1" y="1" width="116" height="17"/>
-                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                                <subviews>
-                                                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="Sgx-Sm-Cj8">
-                                                        <rect key="frame" x="0.0" y="0.0" width="116" height="17"/>
-                                                        <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" title="Table View Cell" id="F50-3y-5l8">
-                                                            <font key="font" metaFont="system"/>
-                                                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                                        </textFieldCell>
-                                                        <connections>
-                                                            <binding destination="JhH-M9-jUF" name="value" keyPath="objectValue.name" id="KRe-HJ-iOY">
-                                                                <dictionary key="options">
-                                                                    <bool key="NSConditionallySetsEditable" value="YES"/>
-                                                                </dictionary>
-                                                            </binding>
-                                                        </connections>
-                                                    </textField>
-                                                </subviews>
-                                                <constraints>
-                                                    <constraint firstItem="Sgx-Sm-Cj8" firstAttribute="leading" secondItem="JhH-M9-jUF" secondAttribute="leading" constant="2" id="Tb1-nb-gG9"/>
-                                                    <constraint firstItem="Sgx-Sm-Cj8" firstAttribute="centerX" secondItem="JhH-M9-jUF" secondAttribute="centerX" id="dYw-dc-agc"/>
-                                                    <constraint firstItem="Sgx-Sm-Cj8" firstAttribute="centerY" secondItem="JhH-M9-jUF" secondAttribute="centerY" id="i29-KM-XP3"/>
-                                                </constraints>
-                                                <connections>
-                                                    <outlet property="textField" destination="Sgx-Sm-Cj8" id="cHj-AE-a9a"/>
-                                                </connections>
-                                            </tableCellView>
-                                        </prototypeCellViews>
                                         <connections>
-                                            <binding destination="CTe-Lv-tdD" name="value" keyPath="arrangedObjects" id="HJh-AW-cbQ"/>
+                                            <binding destination="CTe-Lv-tdD" name="value" keyPath="arrangedObjects.name" id="b8Z-iX-Cdz"/>
                                         </connections>
                                     </tableColumn>
                                     <tableColumn identifier="" width="426" minWidth="40" maxWidth="1000" id="4AA-EF-9Gr">
@@ -87,42 +56,18 @@
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                         </textFieldCell>
                                         <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
-                                        <prototypeCellViews>
-                                            <tableCellView id="4Ds-NP-8nb">
-                                                <rect key="frame" x="120" y="1" width="426" height="17"/>
-                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                                <subviews>
-                                                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="8dg-cJ-fxc">
-                                                        <rect key="frame" x="0.0" y="0.0" width="426" height="17"/>
-                                                        <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" title="Table View Cell" placeholderString="xoxb-SLACK-BOT-TOKEN" id="eXB-la-ouS">
-                                                            <font key="font" metaFont="system"/>
-                                                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                                        </textFieldCell>
-                                                        <connections>
-                                                            <binding destination="4Ds-NP-8nb" name="value" keyPath="objectValue.botToken" id="ZqQ-K1-sfF">
-                                                                <dictionary key="options">
-                                                                    <string key="NSNullPlaceholder">xoxb-SLACK-BOT-TOKEN</string>
-                                                                </dictionary>
-                                                            </binding>
-                                                        </connections>
-                                                    </textField>
-                                                </subviews>
-                                                <constraints>
-                                                    <constraint firstItem="8dg-cJ-fxc" firstAttribute="centerY" secondItem="4Ds-NP-8nb" secondAttribute="centerY" id="bOJ-lO-Pye"/>
-                                                    <constraint firstItem="8dg-cJ-fxc" firstAttribute="leading" secondItem="4Ds-NP-8nb" secondAttribute="leading" constant="2" id="p4e-O7-VhA"/>
-                                                    <constraint firstItem="8dg-cJ-fxc" firstAttribute="centerX" secondItem="4Ds-NP-8nb" secondAttribute="centerX" id="rsk-dI-dde"/>
-                                                </constraints>
-                                                <connections>
-                                                    <outlet property="textField" destination="8dg-cJ-fxc" id="ufh-DI-jkk"/>
-                                                </connections>
-                                            </tableCellView>
-                                        </prototypeCellViews>
                                         <connections>
-                                            <binding destination="CTe-Lv-tdD" name="value" keyPath="arrangedObjects" id="eIa-f4-Ffl"/>
+                                            <binding destination="CTe-Lv-tdD" name="value" keyPath="arrangedObjects.botToken" id="XUF-ST-yvn">
+                                                <dictionary key="options">
+                                                    <string key="NSNullPlaceholder">xoxb-SLACK_BOT_TOKEN</string>
+                                                </dictionary>
+                                            </binding>
                                         </connections>
                                     </tableColumn>
                                 </tableColumns>
+                                <connections>
+                                    <binding destination="CTe-Lv-tdD" name="content" keyPath="arrangedObjects" id="cDC-R2-tsc"/>
+                                </connections>
                             </tableView>
                         </subviews>
                     </clipView>
