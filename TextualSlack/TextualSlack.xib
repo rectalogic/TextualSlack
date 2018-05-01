@@ -112,10 +112,21 @@
                         <action selector="remove:" target="CTe-Lv-tdD" id="NUL-Pa-AgK"/>
                     </connections>
                 </button>
+                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="aut-qV-a1z">
+                    <rect key="frame" x="375" y="23" width="197" height="18"/>
+                    <buttonCell key="cell" type="check" title="Connect when Textual opens" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="ID1-kx-Xyg">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="system"/>
+                    </buttonCell>
+                    <connections>
+                        <binding destination="sJN-kH-Wog" name="value" keyPath="values.Slack Extension -&gt; Autoconnect" id="Ga4-U4-qWu"/>
+                    </connections>
+                </button>
             </subviews>
             <constraints>
                 <constraint firstAttribute="trailing" secondItem="X3M-oL-LmY" secondAttribute="trailing" constant="20" symbolic="YES" id="5zc-1y-XIE"/>
                 <constraint firstItem="yMV-y6-aZw" firstAttribute="leading" secondItem="X3M-oL-LmY" secondAttribute="leading" id="7zj-K9-le4"/>
+                <constraint firstAttribute="trailing" secondItem="aut-qV-a1z" secondAttribute="trailing" constant="20" symbolic="YES" id="Aup-AW-244"/>
                 <constraint firstItem="ciK-xc-YuD" firstAttribute="top" secondItem="yMV-y6-aZw" secondAttribute="top" id="Jrw-yn-Ji1"/>
                 <constraint firstItem="X3M-oL-LmY" firstAttribute="top" secondItem="c22-O7-iKe" secondAttribute="top" constant="20" symbolic="YES" id="PN5-1c-nr8"/>
                 <constraint firstItem="X3M-oL-LmY" firstAttribute="leading" secondItem="c22-O7-iKe" secondAttribute="leading" constant="20" symbolic="YES" id="dC7-Nf-NMk"/>
@@ -123,6 +134,7 @@
                 <constraint firstAttribute="bottom" secondItem="yMV-y6-aZw" secondAttribute="bottom" constant="20" symbolic="YES" id="lxP-rq-Xhv"/>
                 <constraint firstItem="yMV-y6-aZw" firstAttribute="leading" secondItem="c22-O7-iKe" secondAttribute="leading" constant="20" symbolic="YES" id="rFO-EH-J1K"/>
                 <constraint firstItem="ciK-xc-YuD" firstAttribute="leading" secondItem="yMV-y6-aZw" secondAttribute="trailing" constant="8" symbolic="YES" id="vxr-ZL-HzS"/>
+                <constraint firstItem="aut-qV-a1z" firstAttribute="centerY" secondItem="ciK-xc-YuD" secondAttribute="centerY" id="wnN-Bi-bbj"/>
             </constraints>
             <point key="canvasLocation" x="158" y="166"/>
         </customView>

@@ -22,22 +22,42 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         }
         let config = IRCClientConfigMutable()
         config.connectionName = "Slack"
+        config.autoConnect = false
+        config.autoReconnect = false
+        config.sidebarItemExpanded = true
         config.serverList = [IRCServer(dictionary: ["serverAddress": serverAddress])]
+        //XXX see world.findClientWithId - pass in uniqueIdentifier to IRCClientConfigMutable above
         return masterController().world.createClient(with: config)
     }()
-    let slackBot = SlackKit()
+    let slackKit = SlackKit()
 
     func pluginLoadedIntoMemory() {
         DispatchQueue.main.sync {
             _ = Bundle(for: type(of: self)).loadNibNamed("TextualSlack", owner: self, topLevelObjects: nil)
         }
-        if let botTokens = TPCPreferencesUserDefaults.shared().array(forKey: "Slack Extension -> SlackBots") as! [[String : String]]? {
-            for botToken in botTokens {
-                //botToken["name"]
-                if let token = botToken["botToken"] {
-                    slackBot.addRTMBotWithAPIToken(token, options: RTMOptions(reconnect: true))
-                    slackBot.addWebAPIAccessWithToken(token)
-                    slackBot.notificationForEvent(.message) { [weak self] (event, clientConnection) in
+
+        if let serverMenu = masterController().menuController?.mainMenuServerMenuItem?.menu {
+            let menuItem = NSMenuItem(title: "Connect to Slack", target: self, action: #selector(menuItemClicked(sender:)))
+            serverMenu.addItem(NSMenuItem.separator())
+            serverMenu.addItem(menuItem)
+        }
+        if TPCPreferencesUserDefaults.shared().bool(forKey: "Slack Extension -> Autoconnect") {
+            connectToSlack()
+        }
+    }
+
+    func menuItemClicked(sender: NSMenuItem) {
+        connectToSlack()
+    }
+
+    func connectToSlack() {
+        if let slackBots = TPCPreferencesUserDefaults.shared().array(forKey: "Slack Extension -> SlackBots") as! [[String : String]]? {
+            for slackBot in slackBots {
+                //slackBot["name"]
+                if let token = slackBot["botToken"] {
+                    slackKit.addRTMBotWithAPIToken(token, options: RTMOptions(reconnect: true))
+                    slackKit.addWebAPIAccessWithToken(token)
+                    slackKit.notificationForEvent(.message) { [weak self] (event, clientConnection) in
                         guard let message = event.message, let client = clientConnection?.client else {
                             return
                         }
@@ -71,8 +91,8 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         if masterController().mainWindow.selectedClient != self.slackIRCClient {
             return input
         }
-        if let token = self.slackBot.rtm?.token,
-           let client = self.slackBot.clients[token]?.client,
+        if let token = self.slackKit.rtm?.token,
+           let client = self.slackKit.clients[token]?.client,
            let selectedChannel = masterController().mainWindow.selectedChannel,
            //XXX name may not be unique, need to create all channels up front and maintain structs pairing irc/slack channels
            let channelID = client.channels.filter({ $0.value.name == selectedChannel.name }).first?.value.id {
@@ -85,7 +105,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
                 inputText = input as! String
             }
             //XXX on failure, print error to irc server console
-            self.slackBot.webAPI?.sendMessage(channel: channelID, text: inputText, username: self.slackIRCClient.userNickname, asUser: false, parse: WebAPI.ParseMode.full, linkNames: true, attachments: nil, unfurlLinks: false, unfurlMedia: false, iconURL: nil, iconEmoji: nil, success: nil, failure: nil)
+            self.slackKit.webAPI?.sendMessage(channel: channelID, text: inputText, username: self.slackIRCClient.userNickname, asUser: false, parse: WebAPI.ParseMode.full, linkNames: true, attachments: nil, unfurlLinks: false, unfurlMedia: false, iconURL: nil, iconEmoji: nil, success: nil, failure: nil)
         }
         return input //XXX nil asserts
     }
