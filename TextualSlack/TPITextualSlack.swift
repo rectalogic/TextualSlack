@@ -9,27 +9,11 @@
 import Cocoa
 import SlackKit
 
-let serverAddress = "textual.slack.example"
-
 class TPITextualSlack: NSObject, THOPluginProtocol {
     @IBOutlet var preferencesPane: NSView!
-
-    lazy var slackIRCClient: IRCClient = {
-        for client in masterController().world.clientList {
-            if client.config.serverList.first?.serverAddress == serverAddress {
-                return client
-            }
-        }
-        let config = IRCClientConfigMutable()
-        config.connectionName = "Slack"
-        config.autoConnect = false
-        config.autoReconnect = false
-        config.sidebarItemExpanded = true
-        config.serverList = [IRCServer(dictionary: ["serverAddress": serverAddress])]
-        //XXX see world.findClientWithId - pass in uniqueIdentifier to IRCClientConfigMutable above
-        return masterController().world.createClient(with: config)
-    }()
     let slackKit = SlackKit()
+    // Map slackbot token to IRCClient
+    var ircClients = [String : IRCClient]()
 
     func pluginLoadedIntoMemory() {
         DispatchQueue.main.sync {
@@ -41,6 +25,14 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             serverMenu.addItem(NSMenuItem.separator())
             serverMenu.addItem(menuItem)
         }
+
+        //XXX listen for and log .error and .hello ?
+        slackKit.notificationForEvent(.message) { [weak self] (event, clientConnection) in
+            DispatchQueue.main.async {
+                self?.didRecieveSlackMessage(event: event, clientConnection: clientConnection)
+            }
+        }
+
         if TPCPreferencesUserDefaults.shared().bool(forKey: "Slack Extension -> Autoconnect") {
             connectToSlack()
         }
@@ -53,16 +45,31 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
     func connectToSlack() {
         if let slackBots = TPCPreferencesUserDefaults.shared().array(forKey: "Slack Extension -> SlackBots") as! [[String : String]]? {
             for slackBot in slackBots {
-                //slackBot["name"]
                 if let token = slackBot["botToken"] {
+                    let ircClient: IRCClient
+                    if let client = masterController().world.findClient(withId: token) {
+                        ircClient = client
+                    }
+                    else {
+                        let config = IRCClientConfigMutable(dictionary: ["uniqueIdentifier": token])
+                        config.connectionName = slackBot["name"] ?? "Slack"
+                        config.autoConnect = false
+                        config.autoReconnect = false
+                        config.sidebarItemExpanded = true
+                        config.serverList = [IRCServer(dictionary: ["serverAddress": "textual.slack.example"])]
+                        ircClient = masterController().world.createClient(with: config)
+                    }
+                    ircClients[token] = ircClient
                     slackKit.addRTMBotWithAPIToken(token, options: RTMOptions(reconnect: true))
                     slackKit.addWebAPIAccessWithToken(token)
-                    slackKit.notificationForEvent(.message) { [weak self] (event, clientConnection) in
-                        guard let message = event.message, let client = clientConnection?.client else {
-                            return
-                        }
-                        DispatchQueue.main.async {
-                            self?.didRecieveSlackMessage(message: message, client: client)
+
+                    if let clientConnection = slackKit.clients[token], let channels = clientConnection.client?.channels {
+                        for (_, channel) in channels {
+                            if let channelName = channel.name {
+                                ircClient.findChannelOrCreate(channelName, isPrivateMessage: true)
+                                //XXX populate with recent messages
+                                //XXX need to track slack channel ID and associate with irc channel
+                            }
                         }
                     }
                 }
@@ -70,11 +77,18 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         }
     }
 
-    func didRecieveSlackMessage(message: Message, client: Client) {
-        guard let slackChannel = message.channel, let slackUser = message.user, let text = message.text else {
+    func didRecieveSlackMessage(event: Event, clientConnection: ClientConnection?) {
+        guard let message = event.message,
+            let client = clientConnection?.client,
+            let slackChannelID = message.channel,
+            let channelName = client.channels[slackChannelID]?.name,
+            let slackUser = message.user,
+            let text = message.text,
+            let token = clientConnection?.rtm?.token,
+            let ircClient = ircClients[token] else {
             return
         }
-        let ircChannel = self.slackIRCClient.findChannelOrCreate((client.channels[slackChannel]?.name)!, isPrivateMessage: true)
+        let ircChannel = ircClient.findChannelOrCreate(channelName, isPrivateMessage: true)
         let receivedAt: Date
         if let ts = message.ts, let tv = Double(ts) {
             receivedAt = Date(timeIntervalSince1970: tv / 1000.0)
@@ -82,20 +96,20 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         else {
             receivedAt = Date()
         }
-        self.slackIRCClient.print(text, by: client.users[slackUser]?.name, in: ircChannel, as: TVCLogLineType.privateMessageType, command: TVCLogLineDefaultCommandValue, receivedAt: receivedAt, isEncrypted: false, referenceMessage: nil) { (context) in
-            self.slackIRCClient.setUnreadStateFor(ircChannel!)
+        ircClient.print(text, by: client.users[slackUser]?.name, in: ircChannel, as: TVCLogLineType.privateMessageType, command: TVCLogLineDefaultCommandValue, receivedAt: receivedAt, isEncrypted: false, referenceMessage: nil) { (context) in
+            ircClient.setUnreadStateFor(ircChannel!)
         }
     }
 
     func interceptUserInput(_ input: Any, command: IRCPrivateCommand) -> Any? {
-        if masterController().mainWindow.selectedClient != self.slackIRCClient {
+        guard let token = masterController().mainWindow.selectedClient?.uniqueIdentifier, let ircClient = ircClients[token] else {
             return input
         }
-        if let token = self.slackKit.rtm?.token,
-           let client = self.slackKit.clients[token]?.client,
+
+        if let slackClient = self.slackKit.clients[token]?.client,
            let selectedChannel = masterController().mainWindow.selectedChannel,
            //XXX name may not be unique, need to create all channels up front and maintain structs pairing irc/slack channels
-           let channelID = client.channels.filter({ $0.value.name == selectedChannel.name }).first?.value.id {
+           let channelID = slackClient.channels.filter({ $0.value.name == selectedChannel.name }).first?.value.id {
 
             let inputText: String
             if input is NSAttributedString {
@@ -105,7 +119,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
                 inputText = input as! String
             }
             //XXX on failure, print error to irc server console
-            self.slackKit.webAPI?.sendMessage(channel: channelID, text: inputText, username: self.slackIRCClient.userNickname, asUser: false, parse: WebAPI.ParseMode.full, linkNames: true, attachments: nil, unfurlLinks: false, unfurlMedia: false, iconURL: nil, iconEmoji: nil, success: nil, failure: nil)
+            self.slackKit.webAPI?.sendMessage(channel: channelID, text: inputText, username: ircClient.userNickname, asUser: false, parse: WebAPI.ParseMode.full, linkNames: true, attachments: nil, unfurlLinks: false, unfurlMedia: false, iconURL: nil, iconEmoji: nil, success: nil, failure: nil)
         }
         return input //XXX nil asserts
     }
