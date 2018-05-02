@@ -22,8 +22,8 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             _ = Bundle(for: type(of: self)).loadNibNamed("TextualSlack", owner: self, topLevelObjects: nil)
         }
 
-        if let serverMenu = masterController().menuController?.mainMenuServerMenuItem?.menu {
-            let menuItem = NSMenuItem(title: "Connect to Slack", action: #selector(menuItemClicked(sender:)), keyEquivalent: "")
+        if let serverMenu = masterController().menuController?.mainMenuServerMenuItem?.submenu {
+            let menuItem = NSMenuItem(title: "Connect to Slack", target: self, action: #selector(menuItemClicked(sender:)))
             serverMenu.addItem(NSMenuItem.separator())
             serverMenu.addItem(menuItem)
         }
@@ -89,18 +89,22 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
                     if let clientConnection = slackKit.clients[token], let webAPI = clientConnection.webAPI {
                         webAPI.channelsList(excludeArchived: true, excludeMembers: true, success: { (channels) in
                             if let channels = channels {
-                                for channel in channels {
-                                    if let channelID = channel["id"] as? String, let channelName = channel["name"] as? String, let isMember = channel["is_member"] as? Bool {
-                                        if isMember {
-                                            _ = self.ensureIRCChannel(ircClient: ircClient, slackChannelID: channelID, slackChannelName: channelName)
-                                            //XXX populate with recent messages ?
+                                DispatchQueue.main.async {
+                                    for channel in channels {
+                                        if let channelID = channel["id"] as? String, let channelName = channel["name"] as? String, let isMember = channel["is_member"] as? Bool {
+                                            if isMember {
+                                                _ = self.ensureIRCChannel(ircClient: ircClient, slackChannelID: channelID, slackChannelName: channelName)
+                                                //XXX populate with recent messages ?
+                                            }
                                         }
                                     }
                                 }
                             }
                         }) { (error) in
-                            self.logMessage(clientConnection: clientConnection) { (ircClient) in
-                                return "Error fetching channels: \(error)"
+                            DispatchQueue.main.async {
+                                self.logMessage(clientConnection: clientConnection) { (ircClient) in
+                                    return "Error fetching channels: \(error)"
+                                }
                             }
                         }
                     }
@@ -133,6 +137,8 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         //XXX can be readable or uid? https://github.com/ekmartin/slack-irc/blob/master/lib/bot.js#L165
         // https://developer.apple.com/documentation/foundation/nsregularexpression/1414859-replacementstring
         ircClient.print(text, by: client.users[slackUser]?.name, in: ircChannel, as: .privateMessageType, command: TVCLogLineDefaultCommandValue, receivedAt: receivedAt, isEncrypted: false, referenceMessage: nil) { (context) in
+            //XXX don't do this if sender was this user on slack side
+            //XXX ugh, for PM channels isChannel==NO so every msg is badged in dock
             ircClient.setUnreadStateFor(ircChannel!)
         }
     }
