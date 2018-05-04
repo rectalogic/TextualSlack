@@ -16,6 +16,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
     var ircClients = [String : IRCClient]()
     // Map IRCChannel to slack channelID
     var ircChannels = [IRCChannel : String]()
+    let userRegex = try! NSRegularExpression(pattern: "<@(U\\w+)>")
 
     func pluginLoadedIntoMemory() {
         DispatchQueue.main.sync {
@@ -83,8 +84,12 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
                         ircClient = masterController().world.createClient(with: config)
                     }
                     ircClients[token] = ircClient
-                    slackKit.addRTMBotWithAPIToken(token, options: RTMOptions(reconnect: true))
-                    slackKit.addWebAPIAccessWithToken(token)
+                    if slackKit.clients[token]?.rtm == nil {
+                        slackKit.addRTMBotWithAPIToken(token, options: RTMOptions(reconnect: true))
+                    }
+                    if slackKit.clients[token]?.webAPI == nil {
+                        slackKit.addWebAPIAccessWithToken(token)
+                    }
 
                     if let clientConnection = slackKit.clients[token], let webAPI = clientConnection.webAPI {
                         webAPI.channelsList(excludeArchived: true, excludeMembers: true, success: { (channels) in
@@ -93,7 +98,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
                                     for channel in channels {
                                         if let channelID = channel["id"] as? String, let channelName = channel["name"] as? String, let isMember = channel["is_member"] as? Bool {
                                             if isMember {
-                                                _ = self.ensureIRCChannel(ircClient: ircClient, slackChannelID: channelID, slackChannelName: channelName)
+                                                _ = self.ensureIRCChannel(ircClient: ircClient, slackTeamID: clientConnection.client?.team?.id, slackChannelID: channelID, slackChannelName: channelName)
                                                 //XXX populate with recent messages ?
                                             }
                                         }
@@ -124,7 +129,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             let ircClient = ircClients[token] else {
             return
         }
-        let ircChannel = ensureIRCChannel(ircClient: ircClient, slackChannelID: slackChannelID, slackChannelName: slackChannelName)
+        let ircChannel = ensureIRCChannel(ircClient: ircClient, slackTeamID: client.team?.id, slackChannelID: slackChannelID, slackChannelName: slackChannelName)
         let receivedAt: Date
         //XXX seems wrong, slack time 3:04pm is shown as 10:40 in irc
         if let ts = message.ts, let tv = Double(ts) {
@@ -133,13 +138,39 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         else {
             receivedAt = Date()
         }
-        //XXX need to sub <@XXX> uid with name - message.members?
-        //XXX can be readable or uid? https://github.com/ekmartin/slack-irc/blob/master/lib/bot.js#L165
-        // https://developer.apple.com/documentation/foundation/nsregularexpression/1414859-replacementstring
-        ircClient.print(text, by: client.users[slackUser]?.name, in: ircChannel, as: .privateMessageType, command: TVCLogLineDefaultCommandValue, receivedAt: receivedAt, isEncrypted: false, referenceMessage: nil) { (context) in
-            //XXX don't do this if sender was this user on slack side
-            //XXX ugh, for PM channels isChannel==NO so every msg is badged in dock
-            ircClient.setUnreadStateFor(ircChannel!)
+
+        // Replace slack <@Uxxxx> user references with usernames
+        // https://stackoverflow.com/questions/6222115/how-do-you-use-nsregularexpressions-replacementstringforresultinstringoffset
+        var mutableText = text
+        var offset = 0
+        for result in userRegex.matches(in: text, options: [], range: NSRange(location: 0, length: text.count)) {
+            var resultRange = result.range
+            resultRange.location += offset
+            let userID = userRegex.replacementString(for: result, in: mutableText, offset: offset, template: "$1")
+            if let userName = client.users[userID]?.name, let range = Range<String.Index>(resultRange, in: mutableText) {
+                mutableText.replaceSubrange(range, with: userName)
+                offset += userName.count - resultRange.length
+            }
+        }
+
+        if let attachments = message.attachments {
+            for attachment in attachments {
+                if let title = attachment.title {
+                    mutableText.append(" " + title)
+                    mutableText.append(" ")
+                }
+                if let imageURL = attachment.imageURL {
+                    mutableText.append(" " + imageURL)
+                }
+            }
+        }
+
+        let userName = client.users[slackUser]?.name ?? "unknown"
+        ircClient.print(mutableText, by: userName, in: ircChannel, as: .privateMessageType, command: TVCLogLineDefaultCommandValue, receivedAt: receivedAt, isEncrypted: false, referenceMessage: nil) { (context) in
+            // Don't mark messages this user sent on the slack side as unread
+            if !ircClient.stringIsNickname(userName) {
+                ircClient.setUnreadStateFor(ircChannel!)
+            }
         }
     }
 
@@ -166,15 +197,33 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             }
         }
 
-        return input //XXX nil asserts
+        return input
     }
 
-    func ensureIRCChannel(ircClient: IRCClient, slackChannelID: String, slackChannelName: String) -> IRCChannel? {
-        if let ircChannel = ircClient.findChannelOrCreate(slackChannelName, isPrivateMessage: true) {
+    func ensureIRCChannel(ircClient: IRCClient, slackTeamID: String?, slackChannelID: String, slackChannelName: String) -> IRCChannel? {
+        let ircChannelName = "#" + slackChannelName
+        if let ircChannel = ircClient.findChannel(ircChannelName) {
             ircChannels[ircChannel] = slackChannelID
+            ircChannel.activate()
             return ircChannel
         }
-        return nil
+        else {
+            var topic = "https://slack.com/app_redirect?channel=\(slackChannelID)"
+            if let slackTeamID = slackTeamID {
+                topic += "&team=\(slackTeamID)"
+            }
+            let config = IRCChannelConfig(dictionary: [
+                "channelName": ircChannelName,
+                // See TVCLogController.inlineMediaEnabledForView comment - global preferences changes meaning of ignoreInlineMedia
+                "ignoreInlineMedia": TPCPreferences.showInlineMedia() ? false : true,
+                "defaultTopic": topic,
+            ])
+            let ircChannel = masterController().world.createChannel(with: config, on: ircClient)
+            ircChannel.topic = topic
+            ircChannels[ircChannel] = slackChannelID
+            ircChannel.activate()
+            return ircChannel
+        }
     }
 
     var pluginPreferencesPaneView: NSView {
