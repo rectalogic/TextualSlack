@@ -67,7 +67,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
     }
 
     func connectToSlack() {
-        if let slackBots = TPCPreferencesUserDefaults.shared().array(forKey: "Slack Extension -> SlackBots") as! [[String : String]]? {
+        if let slackBots = TPCPreferencesUserDefaults.shared().array(forKey: "Slack Extension -> SlackBots") as? [[String : String]] {
             for slackBot in slackBots {
                 if let token = slackBot["botToken"] {
                     let ircClient: IRCClient
@@ -169,7 +169,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         ircClient.print(mutableText, by: userName, in: ircChannel, as: .privateMessageType, command: TVCLogLineDefaultCommandValue, receivedAt: receivedAt, isEncrypted: false, referenceMessage: nil) { (context) in
             // Don't mark messages this user sent on the slack side as unread
             if !ircClient.stringIsNickname(userName) {
-                ircClient.setUnreadStateFor(ircChannel!)
+                ircClient.setUnreadStateFor(ircChannel)
             }
         }
     }
@@ -185,11 +185,14 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         }
 
         let inputText: String
-        if input is NSAttributedString {
-            inputText = (input as! NSAttributedString).string
+        if let input = input as? NSAttributedString {
+            inputText = input.string
+        }
+        else if let input = input as? String {
+            inputText = input
         }
         else {
-            inputText = input as! String
+            inputText = ""
         }
         webAPI.sendMessage(channel: channelID, text: inputText, username: ircClient.userNickname, asUser: false, parse: WebAPI.ParseMode.full, linkNames: true, attachments: nil, unfurlLinks: false, unfurlMedia: false, iconURL: nil, iconEmoji: nil, success: nil) { (error) in
             self.logMessage(clientConnection: clientConnection) { (ircClient) in
@@ -200,7 +203,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         return input
     }
 
-    func ensureIRCChannel(ircClient: IRCClient, slackTeamID: String?, slackChannelID: String, slackChannelName: String) -> IRCChannel? {
+    func ensureIRCChannel(ircClient: IRCClient, slackTeamID: String?, slackChannelID: String, slackChannelName: String) -> IRCChannel {
         let ircChannelName = "#" + slackChannelName
         if let ircChannel = ircClient.findChannel(ircChannelName) {
             ircChannels[ircChannel] = slackChannelID
