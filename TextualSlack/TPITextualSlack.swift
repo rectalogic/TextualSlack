@@ -190,7 +190,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         let userName = client.users[slackUser]?.name ?? "unknown"
         ircClient.print(mutableText, by: userName, in: ircChannel, as: .privateMessageType, command: TVCLogLineDefaultCommandValue, receivedAt: receivedAt, isEncrypted: false, referenceMessage: nil) { (context) in
             // Don't mark messages this user sent on the slack side as unread
-            if !ircClient.stringIsNickname(userName) {
+            if !ircClient.nicknameIsMyself(userName) {
                 ircClient.setUnreadStateFor(ircChannel)
             }
         }
