@@ -143,9 +143,8 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         }
         let ircChannel = ensureIRCChannel(ircClient: ircClient, slackTeamID: client.team?.id, slackChannelID: slackChannelID, slackChannelName: slackChannelName)
         let receivedAt: Date
-        //XXX seems wrong, slack time 3:04pm is shown as 10:40 in irc
         if let ts = message.ts, let tv = Double(ts) {
-            receivedAt = Date(timeIntervalSince1970: tv / 1000.0)
+            receivedAt = Date(timeIntervalSince1970: tv)
         }
         else {
             receivedAt = Date()
