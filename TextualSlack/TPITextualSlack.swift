@@ -6,11 +6,13 @@
 //  Copyright © 2018 Andrew Wason. All rights reserved.
 //
 
+import os.log
 import Cocoa
 import SlackKit
 
 class TPITextualSlack: NSObject, THOPluginProtocol {
     @IBOutlet var preferencesPane: NSView!
+    let log = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "plugin")
     let slackKit = SlackKit()
     // Map slackbot token to IRCClient
     var ircClients = [String : IRCClient]()
@@ -29,6 +31,11 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             serverMenu.addItem(menuItem)
         }
 
+        slackKit.notificationForEvent(.fileShared) { [weak self] (event, clientConnection) in
+            DispatchQueue.main.async {
+                self?.didRecieveSlackMessage(event: event, clientConnection: clientConnection)
+            }
+        }
         slackKit.notificationForEvent(.message) { [weak self] (event, clientConnection) in
             DispatchQueue.main.async {
                 self?.didRecieveSlackMessage(event: event, clientConnection: clientConnection)
@@ -119,6 +126,11 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
     }
 
     func didRecieveSlackMessage(event: Event, clientConnection: ClientConnection?) {
+        #if DEBUG
+        if let log = self?.log {
+            os_log("Event %@", log: log, type: .debug, String(reflecting: event))
+        }
+        #endif
         guard let message = event.message,
             let client = clientConnection?.client,
             let slackChannelID = message.channel,
@@ -157,11 +169,22 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             for attachment in attachments {
                 if let title = attachment.title {
                     mutableText.append(" " + title)
-                    mutableText.append(" ")
                 }
                 if let imageURL = attachment.imageURL {
                     mutableText.append(" " + imageURL)
                 }
+            }
+        }
+
+        if let file = message.file {
+            if let title = file.title {
+                mutableText.append(" " + title)
+            }
+            if let thumb360 = file.thumb360 {
+                mutableText.append(" " + thumb360)
+            }
+            if let permalink = file.permalink {
+                mutableText.append(" File link: " + permalink)
             }
         }
 
@@ -204,17 +227,18 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
     }
 
     func ensureIRCChannel(ircClient: IRCClient, slackTeamID: String?, slackChannelID: String, slackChannelName: String) -> IRCChannel {
+        var topic = "https://slack.com/app_redirect?channel=\(slackChannelID)"
+        if let slackTeamID = slackTeamID {
+            topic += "&team=\(slackTeamID)"
+        }
         let ircChannelName = "#" + slackChannelName
         if let ircChannel = ircClient.findChannel(ircChannelName) {
+            ircChannel.topic = topic
             ircChannels[ircChannel] = slackChannelID
             ircChannel.activate()
             return ircChannel
         }
         else {
-            var topic = "https://slack.com/app_redirect?channel=\(slackChannelID)"
-            if let slackTeamID = slackTeamID {
-                topic += "&team=\(slackTeamID)"
-            }
             let config = IRCChannelConfig(dictionary: [
                 "channelName": ircChannelName,
                 // See TVCLogController.inlineMediaEnabledForView comment - global preferences changes meaning of ignoreInlineMedia
