@@ -46,6 +46,13 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
                 self?.logMessage(clientConnection: clientConnection) { (ircClient) in
                     return "Connected to \(ircClient.config.connectionName)"
                 }
+                if let slackClient = clientConnection?.client, let ircChannels = self?.ircChannels {
+                    for (ircChannel, slackChannelID) in ircChannels {
+                        if let slackChannel = slackClient.channels[slackChannelID], let ircClient = ircChannel.associatedClient {
+                            self?.ensureIRCChannelMembers(ircClient: ircClient, ircChannel: ircChannel, slackClient: slackClient, slackChannel: slackChannel)
+                        }
+                    }
+                }
             }
         }
         slackKit.notificationForEvent(.error) { [weak self] (event, clientConnection) in
@@ -106,7 +113,6 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
                                         if let channelID = channel["id"] as? String, let channelName = channel["name"] as? String, let isMember = channel["is_member"] as? Bool {
                                             if isMember {
                                                 _ = self.ensureIRCChannel(ircClient: ircClient, slackTeamID: clientConnection.client?.team?.id, slackChannelID: channelID, slackChannelName: channelName)
-                                                //XXX populate with recent messages ?
                                             }
                                         }
                                     }
@@ -134,7 +140,8 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         guard let message = event.message,
             let client = clientConnection?.client,
             let slackChannelID = message.channel,
-            let slackChannelName = client.channels[slackChannelID]?.name,
+            let slackChannel = client.channels[slackChannelID],
+            let slackChannelName = slackChannel.name,
             let slackUser = message.user,
             let text = message.text,
             let token = clientConnection?.rtm?.token,
@@ -194,6 +201,8 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
                 ircClient.setUnreadStateFor(ircChannel)
             }
         }
+
+        ensureIRCChannelMembers(ircClient: ircClient, ircChannel: ircChannel, slackClient: client, slackChannel: slackChannel)
     }
 
     func interceptUserInput(_ input: Any, command: IRCPrivateCommand) -> Any? {
@@ -223,6 +232,29 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         }
 
         return input
+    }
+
+    func ensureIRCChannelMembers(ircClient: IRCClient, ircChannel: IRCChannel, slackClient: Client, slackChannel: Channel) {
+        guard let slackChannelMemberIDs = slackChannel.members else {
+            return
+        }
+        let ircChannelNicknames = Set(ircChannel.memberList.map { $0.user.nickname })
+        let slackChannelMemberMap = Dictionary<String, User>(uniqueKeysWithValues: slackChannelMemberIDs.flatMap {
+            guard let user = slackClient.users[$0], let userName = user.name else {
+                return nil
+            }
+            return (userName, user)
+        })
+        let slackUsernames = Set(slackChannelMemberMap.keys)
+        // Add users to IRC that are in slack channel and not in IRC
+        for username in slackUsernames.subtracting(ircChannelNicknames) {
+            // This uses a private API
+            ircChannel.addMember(IRCChannelUser(user: ircClient.findUserOrCreate(username)))
+        }
+        // Remove users from IRC that are not in slack channel
+        for username in ircChannelNicknames.subtracting(slackUsernames) {
+            ircChannel.removeMember(withNickname: username)
+        }
     }
 
     func ensureIRCChannel(ircClient: IRCClient, slackTeamID: String?, slackChannelID: String, slackChannelName: String) -> IRCChannel {

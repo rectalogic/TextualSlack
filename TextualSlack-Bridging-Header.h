@@ -3,3 +3,9 @@
 //
 
 #import "TextualApplication.h"
+
+// It is an abomination to use private APIs.
+// Textual/Classes/Headers/Private/IRCChannelUserPrivate.h
+@interface IRCChannelUser ()
+- (instancetype)initWithUser:(IRCUser *)user;
+@end
