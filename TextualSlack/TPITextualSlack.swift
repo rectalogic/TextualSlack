@@ -240,16 +240,29 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         }
         let ircChannelNicknames = Set(ircChannel.memberList.map { $0.user.nickname })
         let slackChannelMemberMap = Dictionary<String, User>(uniqueKeysWithValues: slackChannelMemberIDs.flatMap {
-            guard let user = slackClient.users[$0], let userName = user.name else {
+            guard let user = slackClient.users[$0], let username = user.name else {
                 return nil
             }
-            return (userName, user)
+            return (username, user)
         })
         let slackUsernames = Set(slackChannelMemberMap.keys)
         // Add users to IRC that are in slack channel and not in IRC
         for username in slackUsernames.subtracting(ircChannelNicknames) {
+            let ircUser: IRCUser
+            if let existingIRCUser = ircClient.findUser(username) {
+                ircUser = existingIRCUser
+            }
+            else {
+                let newIRCUser = IRCUserMutable(nickname: username, on: ircClient)
+                newIRCUser.username = username
+                if let slackUser = slackChannelMemberMap[username] {
+                    newIRCUser.realName = slackUser.profile?.realName
+                }
+                ircUser = newIRCUser
+            }
+
             // This uses a private API
-            ircChannel.addMember(IRCChannelUser(user: ircClient.findUserOrCreate(username)))
+            ircChannel.addMember(IRCChannelUser(user: ircUser))
         }
         // Remove users from IRC that are not in slack channel
         for username in ircChannelNicknames.subtracting(slackUsernames) {
