@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14109" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
+        <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14109"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -57,9 +58,9 @@
                                         </textFieldCell>
                                         <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                         <connections>
-                                            <binding destination="CTe-Lv-tdD" name="value" keyPath="arrangedObjects.botToken" id="XUF-ST-yvn">
+                                            <binding destination="CTe-Lv-tdD" name="value" keyPath="arrangedObjects.token" id="cAI-vd-gl3">
                                                 <dictionary key="options">
-                                                    <string key="NSNullPlaceholder">xoxb-SLACK_BOT_TOKEN</string>
+                                                    <string key="NSNullPlaceholder">xoxp-SLACK-OAUTH-TOKEN</string>
                                                 </dictionary>
                                             </binding>
                                         </connections>
@@ -140,7 +141,7 @@
         </customView>
         <arrayController automaticallyPreparesContent="YES" id="CTe-Lv-tdD">
             <connections>
-                <binding destination="sJN-kH-Wog" name="contentArray" keyPath="values.Slack Extension -&gt; SlackBots" id="3gF-vt-Ia3">
+                <binding destination="sJN-kH-Wog" name="contentArray" keyPath="values.Slack Extension -&gt; Tokens" id="psB-Y8-5MP">
                     <dictionary key="options">
                         <bool key="NSHandlesContentAsCompoundValue" value="YES"/>
                     </dictionary>

@@ -81,16 +81,16 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
     }
 
     func connectToSlack() {
-        if let slackBots = TPCPreferencesUserDefaults.shared().array(forKey: "Slack Extension -> SlackBots") as? [[String : String]] {
-            for slackBot in slackBots {
-                if let token = slackBot["botToken"] {
+        if let slackTokens = TPCPreferencesUserDefaults.shared().array(forKey: "Slack Extension -> Tokens") as? [[String : String]] {
+            for slackToken in slackTokens {
+                if let token = slackToken["token"] {
                     let ircClient: IRCClient
                     if let client = masterController().world.findClient(withId: token) {
                         ircClient = client
                     }
                     else {
                         let config = IRCClientConfigMutable(dictionary: ["uniqueIdentifier": token])
-                        config.connectionName = slackBot["name"] ?? "Slack"
+                        config.connectionName = slackToken["name"] ?? "Slack"
                         config.autoConnect = false
                         config.autoReconnect = false
                         config.sidebarItemExpanded = true
@@ -211,7 +211,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             let selectedChannel = masterController().mainWindow.selectedChannel,
             let channelID = ircChannels[selectedChannel],
             let clientConnection = slackKit.clients[token],
-            let webAPI = self.slackKit.webAPI else {
+            let webAPI = clientConnection.webAPI else {
             return input
         }
 
@@ -225,13 +225,13 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         else {
             inputText = ""
         }
-        webAPI.sendMessage(channel: channelID, text: inputText, username: ircClient.userNickname, asUser: false, parse: WebAPI.ParseMode.full, linkNames: true, attachments: nil, unfurlLinks: false, unfurlMedia: false, iconURL: nil, iconEmoji: nil, success: nil) { (error) in
+        webAPI.sendMessage(channel: channelID, text: inputText, username: ircClient.userNickname, asUser: true, parse: WebAPI.ParseMode.full, linkNames: true, attachments: nil, unfurlLinks: false, unfurlMedia: false, iconURL: nil, iconEmoji: nil, success: nil) { (error) in
             self.logMessage(clientConnection: clientConnection) { (ircClient) in
                 return "Error sending message: \(error)"
             }
         }
 
-        return input
+        return ""
     }
 
     func ensureIRCChannelMembers(ircClient: IRCClient, ircChannel: IRCChannel, slackClient: Client, slackChannel: Channel) {
