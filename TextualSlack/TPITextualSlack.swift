@@ -14,7 +14,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
     @IBOutlet var preferencesPane: NSView!
     let log = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "plugin")
     let slackKit = SlackKit()
-    // Map slackbot token to IRCClient
+    // Map slack user token to IRCClient
     var ircClients = [String : IRCClient]()
     // Map IRCChannel to slack channelID
     var ircChannels = [IRCChannel : String]()
@@ -142,7 +142,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             let slackChannelID = message.channel,
             let slackChannel = client.channels[slackChannelID],
             let slackChannelName = slackChannel.name,
-            let slackUser = message.user,
+            let slackUser = message.user ?? message.botID,
             let text = message.text,
             let token = clientConnection?.rtm?.token,
             let ircClient = ircClients[token] else {
@@ -225,7 +225,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         else {
             inputText = ""
         }
-        webAPI.sendMessage(channel: channelID, text: inputText, username: ircClient.userNickname, asUser: true, parse: WebAPI.ParseMode.full, linkNames: true, attachments: nil, unfurlLinks: false, unfurlMedia: false, iconURL: nil, iconEmoji: nil, success: nil) { (error) in
+        webAPI.sendMessage(channel: channelID, text: inputText, username: ircClient.userNickname, asUser: true, parse: WebAPI.ParseMode.full, linkNames: true, attachments: nil, unfurlLinks: true, unfurlMedia: true, iconURL: nil, iconEmoji: nil, success: nil) { (error) in
             self.logMessage(clientConnection: clientConnection) { (ircClient) in
                 return "Error sending message: \(error)"
             }
@@ -271,18 +271,19 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
     }
 
     func ensureIRCChannel(ircClient: IRCClient, slackTeamID: String?, slackChannelID: String, slackChannelName: String) -> IRCChannel {
-        var topic = "https://slack.com/app_redirect?channel=\(slackChannelID)"
-        if let slackTeamID = slackTeamID {
-            topic += "&team=\(slackTeamID)"
-        }
         let ircChannelName = "#" + slackChannelName
         if let ircChannel = ircClient.findChannel(ircChannelName) {
-            ircChannel.topic = topic
             ircChannels[ircChannel] = slackChannelID
-            ircChannel.activate()
+            if !ircChannel.isActive {
+                ircChannel.activate()
+            }
             return ircChannel
         }
         else {
+            var topic = "https://slack.com/app_redirect?channel=\(slackChannelID)"
+            if let slackTeamID = slackTeamID {
+                topic += "&team=\(slackTeamID)"
+            }
             let config = IRCChannelConfig(dictionary: [
                 "channelName": ircChannelName,
                 // See TVCLogController.inlineMediaEnabledForView comment - global preferences changes meaning of ignoreInlineMedia
