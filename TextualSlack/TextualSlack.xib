@@ -123,16 +123,29 @@
                         <binding destination="sJN-kH-Wog" name="value" keyPath="values.Slack Extension -&gt; Autoconnect" id="Ga4-U4-qWu"/>
                     </connections>
                 </button>
+                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Fy1-WU-3jA">
+                    <rect key="frame" x="110" y="15" width="147" height="32"/>
+                    <buttonCell key="cell" type="push" title="Generate Token..." bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Btt-k0-mDt">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="system"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="launchSlackTokenWebsiteWithSender:" target="-2" id="L0J-8d-cJN"/>
+                    </connections>
+                </button>
             </subviews>
             <constraints>
+                <constraint firstItem="ciK-xc-YuD" firstAttribute="leading" secondItem="yMV-y6-aZw" secondAttribute="trailing" constant="8" symbolic="YES" id="4FM-Q0-yu6"/>
                 <constraint firstAttribute="trailing" secondItem="X3M-oL-LmY" secondAttribute="trailing" constant="20" symbolic="YES" id="5zc-1y-XIE"/>
                 <constraint firstItem="yMV-y6-aZw" firstAttribute="leading" secondItem="X3M-oL-LmY" secondAttribute="leading" id="7zj-K9-le4"/>
                 <constraint firstAttribute="trailing" secondItem="aut-qV-a1z" secondAttribute="trailing" constant="20" symbolic="YES" id="Aup-AW-244"/>
+                <constraint firstItem="Fy1-WU-3jA" firstAttribute="leading" secondItem="ciK-xc-YuD" secondAttribute="trailing" constant="40" id="Eod-UI-N2P"/>
                 <constraint firstItem="ciK-xc-YuD" firstAttribute="top" secondItem="yMV-y6-aZw" secondAttribute="top" id="Jrw-yn-Ji1"/>
                 <constraint firstItem="X3M-oL-LmY" firstAttribute="top" secondItem="c22-O7-iKe" secondAttribute="top" constant="20" symbolic="YES" id="PN5-1c-nr8"/>
                 <constraint firstItem="X3M-oL-LmY" firstAttribute="leading" secondItem="c22-O7-iKe" secondAttribute="leading" constant="20" symbolic="YES" id="dC7-Nf-NMk"/>
                 <constraint firstItem="yMV-y6-aZw" firstAttribute="top" secondItem="X3M-oL-LmY" secondAttribute="bottom" constant="8" symbolic="YES" id="ecg-Xg-00a"/>
                 <constraint firstAttribute="bottom" secondItem="yMV-y6-aZw" secondAttribute="bottom" constant="20" symbolic="YES" id="lxP-rq-Xhv"/>
+                <constraint firstItem="Fy1-WU-3jA" firstAttribute="centerY" secondItem="ciK-xc-YuD" secondAttribute="centerY" id="m0r-KT-6YZ"/>
                 <constraint firstItem="yMV-y6-aZw" firstAttribute="leading" secondItem="c22-O7-iKe" secondAttribute="leading" constant="20" symbolic="YES" id="rFO-EH-J1K"/>
                 <constraint firstItem="ciK-xc-YuD" firstAttribute="leading" secondItem="yMV-y6-aZw" secondAttribute="trailing" constant="8" symbolic="YES" id="vxr-ZL-HzS"/>
                 <constraint firstItem="aut-qV-a1z" firstAttribute="centerY" secondItem="ciK-xc-YuD" secondAttribute="centerY" id="wnN-Bi-bbj"/>

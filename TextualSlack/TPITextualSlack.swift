@@ -165,7 +165,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             var resultRange = result.range
             resultRange.location += offset
             let userID = userRegex.replacementString(for: result, in: mutableText, offset: offset, template: "$1")
-            if let userName = client.users[userID]?.name, let range = Range<String.Index>(resultRange, in: mutableText) {
+            if let userName = client.users[userID]?.name ?? client.bots[userID]?.name, let range = Range<String.Index>(resultRange, in: mutableText) {
                 mutableText.replaceSubrange(range, with: userName)
                 offset += userName.count - resultRange.length
             }
@@ -194,7 +194,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             }
         }
 
-        let userName = client.users[slackUser]?.name ?? "unknown"
+        let userName = client.users[slackUser]?.name ?? client.bots[slackUser]?.name ?? "unknown"
         ircClient.print(mutableText, by: userName, in: ircChannel, as: .privateMessageType, command: TVCLogLineDefaultCommandValue, receivedAt: receivedAt, isEncrypted: false, referenceMessage: nil) { (context) in
             // Don't mark messages this user sent on the slack side as unread
             if !ircClient.nicknameIsMyself(userName) {
@@ -271,8 +271,13 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
     }
 
     func ensureIRCChannel(ircClient: IRCClient, slackTeamID: String?, slackChannelID: String, slackChannelName: String) -> IRCChannel {
+        var topic = "https://slack.com/app_redirect?channel=\(slackChannelID)"
+        if let slackTeamID = slackTeamID {
+            topic += "&team=\(slackTeamID)"
+        }
         let ircChannelName = "#" + slackChannelName
         if let ircChannel = ircClient.findChannel(ircChannelName) {
+            ircChannel.topic = topic
             ircChannels[ircChannel] = slackChannelID
             if !ircChannel.isActive {
                 ircChannel.activate()
@@ -280,10 +285,6 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             return ircChannel
         }
         else {
-            var topic = "https://slack.com/app_redirect?channel=\(slackChannelID)"
-            if let slackTeamID = slackTeamID {
-                topic += "&team=\(slackTeamID)"
-            }
             let config = IRCChannelConfig(dictionary: [
                 "channelName": ircChannelName,
                 // See TVCLogController.inlineMediaEnabledForView comment - global preferences changes meaning of ignoreInlineMedia
@@ -307,6 +308,12 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
     var pluginPreferencesPaneMenuItemName: String {
         get {
             return "Textual Slack"
+        }
+    }
+
+    @IBAction func launchSlackTokenWebsite(sender: Any) {
+        if let url = URL(string: "https://api.slack.com/custom-integrations/legacy-tokens") {
+            NSWorkspace.shared().open(url)
         }
     }
 }
