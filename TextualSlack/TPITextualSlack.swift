@@ -18,7 +18,21 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
     var ircClients = [String : IRCClient]()
     // Map IRCChannel to slack channelID
     var ircChannels = [IRCChannel : String]()
-    let userRegex = try! NSRegularExpression(pattern: "<@(U\\w+)>")
+    let messageRegex = try! NSRegularExpression(pattern: "<@(U\\w+)>|:(\\w+):")
+
+    lazy var emojiMap: Dictionary<String, String>? = { [unowned self] in
+        let bundle = Bundle(for: type(of: self))
+        if let url = bundle.url(forResource: "emoji", withExtension: "json") {
+            do {
+                let data = try Data(contentsOf: url, options: .alwaysMapped)
+                let json =  try JSONSerialization.jsonObject(with: data)
+                return json as? Dictionary<String, String>
+            } catch let error {
+                os_log("Error loading emoji %@", log: self.log, type: .error, String(reflecting: error))
+            }
+        }
+        return nil
+    }()
 
     func pluginLoadedIntoMemory() {
         DispatchQueue.main.sync {
@@ -133,9 +147,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
 
     func didRecieveSlackMessage(event: Event, clientConnection: ClientConnection?) {
         #if DEBUG
-        if let log = self?.log {
             os_log("Event %@", log: log, type: .debug, String(reflecting: event))
-        }
         #endif
         guard let message = event.message,
             let client = clientConnection?.client,
@@ -157,17 +169,28 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             receivedAt = Date()
         }
 
-        // Replace slack <@Uxxxx> user references with usernames
+        // Replace slack <@Uxxxx> user references with usernames, and emoji :xxxx: with unicode emoji
         // https://stackoverflow.com/questions/6222115/how-do-you-use-nsregularexpressions-replacementstringforresultinstringoffset
         var mutableText = text
         var offset = 0
-        for result in userRegex.matches(in: text, options: [], range: NSRange(location: 0, length: text.count)) {
+        for result in messageRegex.matches(in: text, options: [], range: NSRange(location: 0, length: text.count)) {
+            let replacementValue: String?
             var resultRange = result.range
             resultRange.location += offset
-            let userID = userRegex.replacementString(for: result, in: mutableText, offset: offset, template: "$1")
-            if let userName = client.users[userID]?.name ?? client.bots[userID]?.name, let range = Range<String.Index>(resultRange, in: mutableText) {
-                mutableText.replaceSubrange(range, with: userName)
-                offset += userName.count - resultRange.length
+            // Emoji match
+            if result.rangeAt(2).location != NSNotFound {
+                let emoji = messageRegex.replacementString(for: result, in: mutableText, offset: offset, template: "$2")
+                replacementValue = emojiMap?[emoji] ?? emoji
+            }
+            // Username match
+            else {
+                let userID = messageRegex.replacementString(for: result, in: mutableText, offset: offset, template: "$1")
+                replacementValue = client.users[userID]?.name ?? client.bots[userID]?.name ?? userID
+            }
+            if let replacementValue = replacementValue, let range = Range<String.Index>(resultRange, in: mutableText) {
+                mutableText.replaceSubrange(range, with: replacementValue)
+                // Something is wrong with replacementString offset, it seems to be counting utf16 instead of characters so count utf16 here
+                offset += (replacementValue.utf16.count - resultRange.length)
             }
         }
 
