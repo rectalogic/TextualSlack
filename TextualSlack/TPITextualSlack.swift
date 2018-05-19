@@ -190,6 +190,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             if let replacementValue = replacementValue, let range = Range<String.Index>(resultRange, in: mutableText) {
                 mutableText.replaceSubrange(range, with: replacementValue)
                 // Something is wrong with replacementString offset, it seems to be counting utf16 instead of characters so count utf16 here
+                // NSString.length is defined as "the number of UTF-16 code units", so replacementString must be defined in terms of utf16 too
                 offset += (replacementValue.utf16.count - resultRange.length)
             }
         }
