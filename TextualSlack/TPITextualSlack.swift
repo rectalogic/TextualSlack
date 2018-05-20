@@ -218,11 +218,27 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             }
         }
 
+        // Make our IRC nickname matches our slack username
+        if let slackUsername = client.authenticatedUser?.name {
+            if slackUsername != ircClient.userNickname {
+                ircClient.changeNickname(slackUsername)
+            }
+        }
+
         let userName = client.users[slackUser]?.name ?? client.bots[slackUser]?.name ?? "unknown"
         ircClient.print(mutableText, by: userName, in: ircChannel, as: .privateMessageType, command: TVCLogLineDefaultCommandValue, receivedAt: receivedAt, isEncrypted: false, referenceMessage: nil) { (context) in
-            // Don't mark messages this user sent on the slack side as unread
-            if !ircClient.nicknameIsMyself(userName) {
-                ircClient.setUnreadStateFor(ircChannel)
+            // Don't mark our own messages as unread
+            if userName != ircClient.userNickname {
+                // Slack @here and our nickname should highlight
+                let highlight: Bool
+                if mutableText.contains(ircClient.userNickname) || mutableText.contains("<!here>") {
+                    ircClient.setHighlightStateFor(ircChannel)
+                    highlight = true
+                }
+                else {
+                    highlight = false
+                }
+                ircClient.setUnreadStateFor(ircChannel, isHighlight: highlight)
             }
         }
 
@@ -231,7 +247,6 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
 
     func interceptUserInput(_ input: Any, command: IRCPrivateCommand) -> Any? {
         guard let token = masterController().mainWindow.selectedClient?.uniqueIdentifier,
-            let ircClient = ircClients[token],
             let selectedChannel = masterController().mainWindow.selectedChannel,
             let channelID = ircChannels[selectedChannel],
             let clientConnection = slackKit.clients[token],
@@ -249,7 +264,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         else {
             inputText = ""
         }
-        webAPI.sendMessage(channel: channelID, text: inputText, username: ircClient.userNickname, asUser: true, parse: WebAPI.ParseMode.full, linkNames: true, attachments: nil, unfurlLinks: true, unfurlMedia: true, iconURL: nil, iconEmoji: nil, success: nil) { (error) in
+        webAPI.sendMessage(channel: channelID, text: inputText, username: nil, asUser: true, parse: WebAPI.ParseMode.full, linkNames: true, attachments: nil, unfurlLinks: true, unfurlMedia: true, iconURL: nil, iconEmoji: nil, success: nil) { (error) in
             self.logMessage(clientConnection: clientConnection) { (ircClient) in
                 return "Error sending message: \(error)"
             }
