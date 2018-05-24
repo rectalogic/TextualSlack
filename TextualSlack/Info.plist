@@ -19,7 +19,7 @@
 	<key>CFBundleVersion</key>
 	<string>0</string>
 	<key>MinimumTextualVersion</key>
-	<string>6.0.0</string>
+	<string>7.0.10</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2018 Andrew Wason. All rights reserved.</string>
 	<key>NSPrincipalClass</key>

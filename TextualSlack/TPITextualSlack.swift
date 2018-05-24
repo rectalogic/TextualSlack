@@ -340,8 +340,9 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         else {
             let config = IRCChannelConfig(dictionary: [
                 "channelName": ircChannelName,
-                // See TVCLogController.inlineMediaEnabledForView comment - global preferences changes meaning of ignoreInlineMedia
-                "ignoreInlineMedia": TPCPreferences.showInlineMedia() ? false : true,
+                // 7.0.10 changes inline media preference names, see comments in IRCChannelConfig.populateDictionaryValues
+                "inlineMediaEnabled": true,
+                "inlineMediaDisabled": false,
                 "defaultTopic": topic,
             ])
             let ircChannel = masterController().world.createChannel(with: config, on: ircClient)
