@@ -28,7 +28,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
     var ircClients = [String : IRCClient]()
     // Map IRCChannel to slack channelID
     var ircChannels = [IRCChannel : SlackChannelInfo]()
-    let messageRegex = try! NSRegularExpression(pattern: "<@(U\\w+)>|:(\\w+):")
+    let messageRegex = try! NSRegularExpression(pattern: "<@(U\\w+)>|:([\\w\\-]+):")
 
     lazy var emojiMap: Dictionary<String, String>? = { [unowned self] in
         let bundle = Bundle(for: type(of: self))
