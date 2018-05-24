@@ -24,3 +24,8 @@ Open Textual preferences and then Textual Slack preferences.
 Click `+` to dd a new account, enter the name (this will be the used as the server name in the Textual sidebar) and enter the Slack user token you generated. Check the box if you want Textual to connect to Slack on startup. Otherwise you can connect on demand using the Server menu.
 
 ![Server menu](/doc/menu.png)
+
+## Using
+
+When mentioning a user be sure to prefix their username with `@` so that
+is is expanded properly on the Slack side.

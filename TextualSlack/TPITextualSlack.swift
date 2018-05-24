@@ -10,6 +10,16 @@ import os.log
 import Cocoa
 import SlackKit
 
+class SlackChannelInfo {
+    let channelID: String
+    var lastMessageTS: String?
+    var lastMarkTS: String?
+
+    init(channelID: String) {
+        self.channelID = channelID
+    }
+}
+
 class TPITextualSlack: NSObject, THOPluginProtocol {
     @IBOutlet var preferencesPane: NSView!
     let log = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "plugin")
@@ -17,7 +27,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
     // Map slack user token to IRCClient
     var ircClients = [String : IRCClient]()
     // Map IRCChannel to slack channelID
-    var ircChannels = [IRCChannel : String]()
+    var ircChannels = [IRCChannel : SlackChannelInfo]()
     let messageRegex = try! NSRegularExpression(pattern: "<@(U\\w+)>|:(\\w+):")
 
     lazy var emojiMap: Dictionary<String, String>? = { [unowned self] in
@@ -61,8 +71,8 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
                     return "Connected to \(ircClient.config.connectionName)"
                 }
                 if let slackClient = clientConnection?.client, let ircChannels = self?.ircChannels {
-                    for (ircChannel, slackChannelID) in ircChannels {
-                        if let slackChannel = slackClient.channels[slackChannelID], let ircClient = ircChannel.associatedClient {
+                    for (ircChannel, slackChannelInfo) in ircChannels {
+                        if let slackChannel = slackClient.channels[slackChannelInfo.channelID], let ircClient = ircChannel.associatedClient {
                             self?.ensureIRCChannelMembers(ircClient: ircClient, ircChannel: ircChannel, slackClient: slackClient, slackChannel: slackChannel)
                         }
                     }
@@ -227,18 +237,20 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
 
         let userName = client.users[slackUser]?.name ?? client.bots[slackUser]?.name ?? "unknown"
         ircClient.print(mutableText, by: userName, in: ircChannel, as: .privateMessageType, command: TVCLogLineDefaultCommandValue, receivedAt: receivedAt, isEncrypted: false, referenceMessage: nil) { (context) in
+            if let ts = message.ts, let slackChannelInfo = self.ircChannels[ircChannel] {
+                slackChannelInfo.lastMessageTS = ts
+            }
             // Don't mark our own messages as unread
-            if userName != ircClient.userNickname {
+            if !ircClient.nicknameIsMyself(userName) {
                 // Slack @here and our nickname should highlight
-                let highlight: Bool
-                if mutableText.contains(ircClient.userNickname) || mutableText.contains("<!here>") {
+                let isHighlight = context.isHighlight || mutableText.contains("<!here>")
+                if !ircClient.notifyText(isHighlight ? .highlightType : .channelMessageType, lineType: .privateMessageType, target: ircChannel, nickname: userName, text: mutableText) {
+                    return
+                }
+                if isHighlight {
                     ircClient.setHighlightStateFor(ircChannel)
-                    highlight = true
                 }
-                else {
-                    highlight = false
-                }
-                ircClient.setUnreadStateFor(ircChannel, isHighlight: highlight)
+                ircClient.setUnreadStateFor(ircChannel, isHighlight: isHighlight)
             }
         }
 
@@ -248,7 +260,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
     func interceptUserInput(_ input: Any, command: IRCPrivateCommand) -> Any? {
         guard let token = masterController().mainWindow.selectedClient?.uniqueIdentifier,
             let selectedChannel = masterController().mainWindow.selectedChannel,
-            let channelID = ircChannels[selectedChannel],
+            let slackChannelInfo = ircChannels[selectedChannel],
             let clientConnection = slackKit.clients[token],
             let webAPI = clientConnection.webAPI else {
             return input
@@ -264,7 +276,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         else {
             inputText = ""
         }
-        webAPI.sendMessage(channel: channelID, text: inputText, username: nil, asUser: true, parse: WebAPI.ParseMode.full, linkNames: true, attachments: nil, unfurlLinks: true, unfurlMedia: true, iconURL: nil, iconEmoji: nil, success: nil) { (error) in
+        webAPI.sendMessage(channel: slackChannelInfo.channelID, text: inputText, username: nil, asUser: true, parse: WebAPI.ParseMode.full, linkNames: true, attachments: nil, unfurlLinks: true, unfurlMedia: true, iconURL: nil, iconEmoji: nil, success: nil) { (error) in
             self.logMessage(clientConnection: clientConnection) { (ircClient) in
                 return "Error sending message: \(error)"
             }
@@ -317,7 +329,9 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         let ircChannelName = "#" + slackChannelName
         if let ircChannel = ircClient.findChannel(ircChannelName) {
             ircChannel.topic = topic
-            ircChannels[ircChannel] = slackChannelID
+            if !ircChannels.keys.contains { $0 === ircChannel } {
+                ircChannels[ircChannel] = SlackChannelInfo(channelID: slackChannelID)
+            }
             if !ircChannel.isActive {
                 ircChannel.activate()
             }
@@ -332,7 +346,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             ])
             let ircChannel = masterController().world.createChannel(with: config, on: ircClient)
             ircChannel.topic = topic
-            ircChannels[ircChannel] = slackChannelID
+            ircChannels[ircChannel] = SlackChannelInfo(channelID: slackChannelID)
             ircChannel.activate()
             return ircChannel
         }
