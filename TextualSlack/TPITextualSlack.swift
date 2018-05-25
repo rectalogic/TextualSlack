@@ -18,6 +18,10 @@ class SlackChannelInfo {
     init(channelID: String) {
         self.channelID = channelID
     }
+
+    var needsMark: Bool {
+        return lastMessageTS != nil && lastMessageTS != lastMarkTS
+    }
 }
 
 class TPITextualSlack: NSObject, THOPluginProtocol {
@@ -28,7 +32,9 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
     var ircClients = [String : IRCClient]()
     // Map IRCChannel to slack channelID
     var ircChannels = [IRCChannel : SlackChannelInfo]()
-    let messageRegex = try! NSRegularExpression(pattern: "<@(U\\w+)>|:([\\w\\-]+):")
+    let messageRegex = try! NSRegularExpression(pattern: "<@(U\\w+)>|:([\\w\\-\\+]+):")
+    var selectionChangeObserver: NSObjectProtocol?
+    var didBecomeMainObserver: NSObjectProtocol?
 
     lazy var emojiMap: Dictionary<String, String>? = { [unowned self] in
         let bundle = Bundle(for: type(of: self))
@@ -47,6 +53,14 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
     func pluginLoadedIntoMemory() {
         DispatchQueue.main.sync {
             _ = Bundle(for: type(of: self)).loadNibNamed("TextualSlack", owner: self, topLevelObjects: nil)
+        }
+
+        let center = NotificationCenter.default
+        selectionChangeObserver = center.addObserver(forName: NSNotification.Name.NSOutlineViewSelectionDidChange, object: masterController().mainWindow.serverList, queue: OperationQueue.main) { (notification) in
+            self.ensureChannelsMarked()
+        }
+        didBecomeMainObserver = center.addObserver(forName: NSNotification.Name.NSWindowDidBecomeMain, object: masterController().mainWindow, queue: OperationQueue.main) { (notification) in
+            self.ensureChannelsMarked()
         }
 
         if let serverMenu = masterController().menuController?.mainMenuServerMenuItem?.submenu {
@@ -91,6 +105,16 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             DispatchQueue.main.async {
                 self.connectToSlack()
             }
+        }
+    }
+
+    func pluginWillBeUnloadedFromMemory() {
+        let center = NotificationCenter.default
+        if let o = self.selectionChangeObserver {
+            center.removeObserver(o)
+        }
+        if let o = self.didBecomeMainObserver {
+            center.removeObserver(o)
         }
     }
 
@@ -228,7 +252,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             }
         }
 
-        // Make our IRC nickname matches our slack username
+        // Make our IRC nickname match our slack username
         if let slackUsername = client.authenticatedUser?.name {
             if slackUsername != ircClient.userNickname {
                 ircClient.changeNickname(slackUsername)
@@ -244,13 +268,12 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             if !ircClient.nicknameIsMyself(userName) {
                 // Slack @here and our nickname should highlight
                 let isHighlight = context.isHighlight || mutableText.contains("<!here>")
-                if !ircClient.notifyText(isHighlight ? .highlightType : .channelMessageType, lineType: .privateMessageType, target: ircChannel, nickname: userName, text: mutableText) {
-                    return
+                if ircClient.notifyText(isHighlight ? .highlightType : .channelMessageType, lineType: .privateMessageType, target: ircChannel, nickname: userName, text: mutableText) {
+                    if isHighlight {
+                        ircClient.setHighlightStateFor(ircChannel)
+                    }
+                    ircClient.setUnreadStateFor(ircChannel, isHighlight: isHighlight)
                 }
-                if isHighlight {
-                    ircClient.setHighlightStateFor(ircChannel)
-                }
-                ircClient.setUnreadStateFor(ircChannel, isHighlight: isHighlight)
             }
         }
 
@@ -350,6 +373,22 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             ircChannels[ircChannel] = SlackChannelInfo(channelID: slackChannelID)
             ircChannel.activate()
             return ircChannel
+        }
+    }
+
+    func ensureChannelsMarked() {
+        for (ircChannel, slackChannelInfo) in ircChannels {
+            if slackChannelInfo.needsMark && !ircChannel.isUnread {
+                if let ircClient = ircChannel.associatedClient, let clientConnection = slackKit.clients[ircClient.uniqueIdentifier], let webAPI = clientConnection.webAPI, let ts = slackChannelInfo.lastMessageTS {
+                    webAPI.markChannel(channel: slackChannelInfo.channelID, timestamp: ts, success: { (ts) in
+                        slackChannelInfo.lastMarkTS = slackChannelInfo.lastMessageTS
+                    }) { (error) in
+                        self.logMessage(clientConnection: clientConnection) { (ircClient) in
+                            return "Error marking channel \(ircChannel.name): \(error)"
+                        }
+                    }
+                }
+            }
         }
     }
 
