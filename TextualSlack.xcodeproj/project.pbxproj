@@ -105,7 +105,7 @@
 				C2DCCDA120ADCB3600A144AA /* emoji.json */,
 			);
 			name = Resources;
-			path = "TextualSlack/Resources";
+			path = TextualSlack/Resources;
 			sourceTree = "<group>";
 		};
 		C2F964122092781500D68C93 = {
@@ -164,7 +164,7 @@
 		C2F964132092781500D68C93 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0930;
+				LastUpgradeCheck = 0940;
 				ORGANIZATIONNAME = "Andrew Wason";
 				TargetAttributes = {
 					C2F9641A2092781500D68C93 = {
@@ -320,6 +320,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
 			};
 			name = Release;
 		};
