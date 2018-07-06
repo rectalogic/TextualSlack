@@ -214,12 +214,12 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             // Emoji match
             if result.rangeAt(2).location != NSNotFound {
                 let emoji = messageRegex.replacementString(for: result, in: mutableText, offset: offset, template: "$2")
-                replacementValue = emojiMap?[emoji] ?? emoji
+                replacementValue = emojiMap?[emoji]
             }
             // Username match
             else {
                 let userID = messageRegex.replacementString(for: result, in: mutableText, offset: offset, template: "$1")
-                replacementValue = client.users[userID]?.name ?? client.bots[userID]?.name ?? userID
+                replacementValue = client.users[userID]?.name ?? client.bots[userID]?.name
             }
             if let replacementValue = replacementValue, let range = Range<String.Index>(resultRange, in: mutableText) {
                 mutableText.replaceSubrange(range, with: replacementValue)
