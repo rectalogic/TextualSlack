@@ -234,6 +234,9 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
                 if let title = attachment.title {
                     mutableText.append(" " + title)
                 }
+                if let fallback = attachment.fallback {
+                    mutableText.append(" " + fallback)
+                }
                 if let imageURL = attachment.imageURL {
                     mutableText.append(" " + imageURL)
                 }
