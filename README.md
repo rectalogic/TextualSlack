@@ -8,6 +8,7 @@ Install [Carthage](https://github.com/Carthage/Carthage#installing-carthage)
 
 To build using Xcode, first run `carthage bootstrap --platform macOS`.
 To build a release from a tag, use the `release.sh` script passing the git tag and output build directory.
+To build debug libraries `carthage build --configuration Debug --platform macOS`.
 
 ## Configuring
 
