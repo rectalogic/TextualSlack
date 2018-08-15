@@ -24,11 +24,36 @@
 		C25941BE2093B78C0053D4AC /* Starscream.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = C25941A52093B2D40053D4AC /* Starscream.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		C25941BF2093B78C0053D4AC /* Swifter.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = C25941A02093B2D40053D4AC /* Swifter.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		C25941C12095533D0053D4AC /* TextualSlack.xib in Resources */ = {isa = PBXBuildFile; fileRef = C25941C02095533D0053D4AC /* TextualSlack.xib */; };
+		C2CDB65821245F9900BF8644 /* SlackKit.framework.dSYM in CopyFiles */ = {isa = PBXBuildFile; fileRef = C2CDB65021245F9800BF8644 /* SlackKit.framework.dSYM */; };
+		C2CDB65921245F9900BF8644 /* SKWebAPI.framework.dSYM in CopyFiles */ = {isa = PBXBuildFile; fileRef = C2CDB65121245F9800BF8644 /* SKWebAPI.framework.dSYM */; };
+		C2CDB65A21245F9900BF8644 /* SKCore.framework.dSYM in CopyFiles */ = {isa = PBXBuildFile; fileRef = C2CDB65221245F9800BF8644 /* SKCore.framework.dSYM */; };
+		C2CDB65B21245F9900BF8644 /* Starscream.framework.dSYM in CopyFiles */ = {isa = PBXBuildFile; fileRef = C2CDB65321245F9800BF8644 /* Starscream.framework.dSYM */; };
+		C2CDB65C21245F9900BF8644 /* SKRTMAPI.framework.dSYM in CopyFiles */ = {isa = PBXBuildFile; fileRef = C2CDB65421245F9800BF8644 /* SKRTMAPI.framework.dSYM */; };
+		C2CDB65D21245F9900BF8644 /* Swifter.framework.dSYM in CopyFiles */ = {isa = PBXBuildFile; fileRef = C2CDB65521245F9900BF8644 /* Swifter.framework.dSYM */; };
+		C2CDB65E21245F9900BF8644 /* SKClient.framework.dSYM in CopyFiles */ = {isa = PBXBuildFile; fileRef = C2CDB65621245F9900BF8644 /* SKClient.framework.dSYM */; };
+		C2CDB65F21245F9900BF8644 /* SKServer.framework.dSYM in CopyFiles */ = {isa = PBXBuildFile; fileRef = C2CDB65721245F9900BF8644 /* SKServer.framework.dSYM */; };
 		C2DCCDA220ADCB3600A144AA /* emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = C2DCCDA120ADCB3600A144AA /* emoji.json */; };
 		C2F96426209278DE00D68C93 /* TPITextualSlack.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2F96425209278DE00D68C93 /* TPITextualSlack.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		C24E50152112048000926788 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 16;
+			files = (
+				C2CDB65821245F9900BF8644 /* SlackKit.framework.dSYM in CopyFiles */,
+				C2CDB65921245F9900BF8644 /* SKWebAPI.framework.dSYM in CopyFiles */,
+				C2CDB65A21245F9900BF8644 /* SKCore.framework.dSYM in CopyFiles */,
+				C2CDB65B21245F9900BF8644 /* Starscream.framework.dSYM in CopyFiles */,
+				C2CDB65C21245F9900BF8644 /* SKRTMAPI.framework.dSYM in CopyFiles */,
+				C2CDB65D21245F9900BF8644 /* Swifter.framework.dSYM in CopyFiles */,
+				C2CDB65E21245F9900BF8644 /* SKClient.framework.dSYM in CopyFiles */,
+				C2CDB65F21245F9900BF8644 /* SKServer.framework.dSYM in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C25941B72093B7780053D4AC /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -58,6 +83,14 @@
 		C25941A52093B2D40053D4AC /* Starscream.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Starscream.framework; path = Carthage/Build/Mac/Starscream.framework; sourceTree = "<group>"; };
 		C25941A62093B2D40053D4AC /* SKClient.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SKClient.framework; path = Carthage/Build/Mac/SKClient.framework; sourceTree = "<group>"; };
 		C25941C02095533D0053D4AC /* TextualSlack.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = TextualSlack.xib; path = TextualSlack/TextualSlack.xib; sourceTree = "<group>"; };
+		C2CDB65021245F9800BF8644 /* SlackKit.framework.dSYM */ = {isa = PBXFileReference; lastKnownFileType = wrapper.dsym; name = SlackKit.framework.dSYM; path = Carthage/Build/Mac/SlackKit.framework.dSYM; sourceTree = "<group>"; };
+		C2CDB65121245F9800BF8644 /* SKWebAPI.framework.dSYM */ = {isa = PBXFileReference; lastKnownFileType = wrapper.dsym; name = SKWebAPI.framework.dSYM; path = Carthage/Build/Mac/SKWebAPI.framework.dSYM; sourceTree = "<group>"; };
+		C2CDB65221245F9800BF8644 /* SKCore.framework.dSYM */ = {isa = PBXFileReference; lastKnownFileType = wrapper.dsym; name = SKCore.framework.dSYM; path = Carthage/Build/Mac/SKCore.framework.dSYM; sourceTree = "<group>"; };
+		C2CDB65321245F9800BF8644 /* Starscream.framework.dSYM */ = {isa = PBXFileReference; lastKnownFileType = wrapper.dsym; name = Starscream.framework.dSYM; path = Carthage/Build/Mac/Starscream.framework.dSYM; sourceTree = "<group>"; };
+		C2CDB65421245F9800BF8644 /* SKRTMAPI.framework.dSYM */ = {isa = PBXFileReference; lastKnownFileType = wrapper.dsym; name = SKRTMAPI.framework.dSYM; path = Carthage/Build/Mac/SKRTMAPI.framework.dSYM; sourceTree = "<group>"; };
+		C2CDB65521245F9900BF8644 /* Swifter.framework.dSYM */ = {isa = PBXFileReference; lastKnownFileType = wrapper.dsym; name = Swifter.framework.dSYM; path = Carthage/Build/Mac/Swifter.framework.dSYM; sourceTree = "<group>"; };
+		C2CDB65621245F9900BF8644 /* SKClient.framework.dSYM */ = {isa = PBXFileReference; lastKnownFileType = wrapper.dsym; name = SKClient.framework.dSYM; path = Carthage/Build/Mac/SKClient.framework.dSYM; sourceTree = "<group>"; };
+		C2CDB65721245F9900BF8644 /* SKServer.framework.dSYM */ = {isa = PBXFileReference; lastKnownFileType = wrapper.dsym; name = SKServer.framework.dSYM; path = Carthage/Build/Mac/SKServer.framework.dSYM; sourceTree = "<group>"; };
 		C2DCCDA120ADCB3600A144AA /* emoji.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = emoji.json; path = TextualSlack/Resources/emoji.json; sourceTree = SOURCE_ROOT; };
 		C2F9641B2092781500D68C93 /* TextualSlack.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TextualSlack.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		C2F9641E2092781500D68C93 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -99,6 +132,21 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		C2CDB64F21245EE800BF8644 /* Symbols */ = {
+			isa = PBXGroup;
+			children = (
+				C2CDB65621245F9900BF8644 /* SKClient.framework.dSYM */,
+				C2CDB65221245F9800BF8644 /* SKCore.framework.dSYM */,
+				C2CDB65421245F9800BF8644 /* SKRTMAPI.framework.dSYM */,
+				C2CDB65721245F9900BF8644 /* SKServer.framework.dSYM */,
+				C2CDB65121245F9800BF8644 /* SKWebAPI.framework.dSYM */,
+				C2CDB65021245F9800BF8644 /* SlackKit.framework.dSYM */,
+				C2CDB65321245F9800BF8644 /* Starscream.framework.dSYM */,
+				C2CDB65521245F9900BF8644 /* Swifter.framework.dSYM */,
+			);
+			name = Symbols;
+			sourceTree = "<group>";
+		};
 		C2DCCDA020ADCB1300A144AA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -118,6 +166,7 @@
 				C2F9641D2092781500D68C93 /* TextualSlack */,
 				C2F9641C2092781500D68C93 /* Products */,
 				C259419E2093B2D40053D4AC /* Frameworks */,
+				C2CDB64F21245EE800BF8644 /* Symbols */,
 			);
 			sourceTree = "<group>";
 		};
@@ -148,6 +197,7 @@
 				C2F964182092781500D68C93 /* Frameworks */,
 				C2F964192092781500D68C93 /* Resources */,
 				C25941B72093B7780053D4AC /* CopyFiles */,
+				C24E50152112048000926788 /* CopyFiles */,
 			);
 			buildRules = (
 			);
