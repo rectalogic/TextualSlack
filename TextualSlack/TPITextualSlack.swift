@@ -146,7 +146,10 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
                         ircClient = masterController().world.createClient(with: config)
                     }
                     ircClients[token] = ircClient
-                    if slackKit.clients[token]?.rtm == nil {
+                    if let rtm = slackKit.clients[token]?.rtm {
+                        rtm.connect()
+                    }
+                    else {
                         slackKit.addRTMBotWithAPIToken(token, options: RTMOptions(reconnect: true))
                     }
                     if slackKit.clients[token]?.webAPI == nil {
