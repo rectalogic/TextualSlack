@@ -124,7 +124,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
 
     func logMessage(clientConnection: ClientConnection?, message: (_ ircClient: IRCClient) -> String) {
         if let token = clientConnection?.rtm?.token, let ircClient = ircClients[token] {
-            ircClient.print(message(ircClient), by: nil, in: nil, as: .noticeType, command: TVCLogLineDefaultCommandValue)
+            ircClient.print(message(ircClient), by: nil, in: nil, as: .notice, command: TVCLogLineDefaultCommandValue)
         }
     }
 
@@ -266,7 +266,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         }
 
         let userName = client.users[slackUser]?.name ?? client.bots[slackUser]?.name ?? "unknown"
-        ircClient.print(mutableText, by: userName, in: ircChannel, as: .privateMessageType, command: TVCLogLineDefaultCommandValue, receivedAt: receivedAt, isEncrypted: false, referenceMessage: nil) { (context) in
+        ircClient.print(mutableText, by: userName, in: ircChannel, as: .privateMessage, command: TVCLogLineDefaultCommandValue, receivedAt: receivedAt, isEncrypted: false, referenceMessage: nil) { (context) in
             if let ts = message.ts, let slackChannelInfo = self.ircChannels[ircChannel] {
                 slackChannelInfo.lastMessageTS = ts
             }
@@ -274,7 +274,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             if !ircClient.nicknameIsMyself(userName) {
                 // Slack @here and our nickname should highlight
                 let isHighlight = context.isHighlight || mutableText.contains("<!here>")
-                if ircClient.notifyText(isHighlight ? .highlightType : .channelMessageType, lineType: .privateMessageType, target: ircChannel, nickname: userName, text: mutableText) {
+                if ircClient.notifyText(isHighlight ? .highlight : .channelMessage, lineType: .privateMessage, target: ircChannel, nickname: userName, text: mutableText) {
                     if isHighlight {
                         ircClient.setHighlightStateFor(ircChannel)
                     }
@@ -286,7 +286,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         ensureIRCChannelMembers(ircClient: ircClient, ircChannel: ircChannel, slackClient: client, slackChannel: slackChannel)
     }
 
-    func interceptUserInput(_ input: Any, command: IRCPrivateCommand) -> Any? {
+    func interceptUserInput(_ input: Any, command: IRCRemoteCommand) -> Any? {
         guard let token = masterController().mainWindow.selectedClient?.uniqueIdentifier,
             let selectedChannel = masterController().mainWindow.selectedChannel,
             let slackChannelInfo = ircChannels[selectedChannel],
