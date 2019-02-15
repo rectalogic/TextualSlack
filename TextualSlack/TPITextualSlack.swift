@@ -56,10 +56,10 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         }
 
         let center = NotificationCenter.default
-        selectionChangeObserver = center.addObserver(forName: NSNotification.Name.NSOutlineViewSelectionDidChange, object: masterController().mainWindow.serverList, queue: OperationQueue.main) { (notification) in
+        selectionChangeObserver = center.addObserver(forName: NSOutlineView.selectionDidChangeNotification, object: masterController().mainWindow.serverList, queue: OperationQueue.main) { (notification) in
             self.ensureChannelsMarked()
         }
-        didBecomeMainObserver = center.addObserver(forName: NSNotification.Name.NSWindowDidBecomeMain, object: masterController().mainWindow, queue: OperationQueue.main) { (notification) in
+        didBecomeMainObserver = center.addObserver(forName: NSWindow.didBecomeMainNotification, object: masterController().mainWindow, queue: OperationQueue.main) { (notification) in
             self.ensureChannelsMarked()
         }
 
@@ -118,7 +118,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         }
     }
 
-    func menuItemClicked(sender: NSMenuItem) {
+    @objc func menuItemClicked(sender: NSMenuItem) {
         connectToSlack()
     }
 
@@ -215,7 +215,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             var resultRange = result.range
             resultRange.location += offset
             // Emoji match
-            if result.rangeAt(2).location != NSNotFound {
+            if result.range(at: 2).location != NSNotFound {
                 let emoji = messageRegex.replacementString(for: result, in: mutableText, offset: offset, template: "$2")
                 replacementValue = emojiMap?[emoji]
             }
@@ -319,7 +319,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             return
         }
         let ircChannelNicknames = Set(ircChannel.memberList.map { $0.user.nickname })
-        let slackChannelMemberMap = Dictionary<String, User>(uniqueKeysWithValues: slackChannelMemberIDs.flatMap {
+        let slackChannelMemberMap = Dictionary<String, User>(uniqueKeysWithValues: slackChannelMemberIDs.compactMap {
             guard let user = slackClient.users[$0], let username = user.name else {
                 return nil
             }
@@ -412,7 +412,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
 
     @IBAction func launchSlackTokenWebsite(sender: Any) {
         if let url = URL(string: "https://api.slack.com/custom-integrations/legacy-tokens") {
-            NSWorkspace.shared().open(url)
+            NSWorkspace.shared.open(url)
         }
     }
 }
