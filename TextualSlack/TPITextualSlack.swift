@@ -249,12 +249,14 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             }
         }
 
-        if let file = event.nestedMessage?.file ?? event.message?.file {
-            if let title = file.title {
-                mutableText.append(" " + title)
-            }
-            if let urlPrivate = file.urlPrivate {
-                mutableText.append(" File link: " + urlPrivate)
+        if let files = event.nestedMessage?.files ?? event.message?.files {
+            for file in files {
+                if let title = file.title {
+                    mutableText.append(" " + title)
+                }
+                if let urlPrivate = file.urlPrivate {
+                    mutableText.append(" File link: " + urlPrivate)
+                }
             }
         }
 
