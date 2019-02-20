@@ -186,20 +186,20 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         #if DEBUG
             os_log("Event %@", log: log, type: .debug, String(reflecting: event))
         #endif
-        guard let message = event.message,
+        guard
             let client = clientConnection?.client,
-            let slackChannelID = message.channel,
+            let slackChannelID = event.nestedMessage?.channel ?? event.message?.channel,
             let slackChannel = client.channels[slackChannelID],
             let slackChannelName = slackChannel.name,
-            let slackUser = message.user ?? message.botID,
-            let text = message.text,
+            let slackUser = (event.nestedMessage?.user ?? event.message?.user) ?? (event.nestedMessage?.botID ?? event.message?.botID),
+            let text = event.nestedMessage?.text ?? event.message?.text,
             let token = clientConnection?.rtm?.token,
             let ircClient = ircClients[token] else {
             return
         }
         let ircChannel = ensureIRCChannel(ircClient: ircClient, slackTeamID: client.team?.id, slackChannelID: slackChannelID, slackChannelName: slackChannelName)
         let receivedAt: Date
-        if let ts = message.ts, let tv = Double(ts) {
+        if let ts = event.nestedMessage?.ts ?? event.message?.ts, let tv = Double(ts) {
             receivedAt = Date(timeIntervalSince1970: tv)
         }
         else {
@@ -209,6 +209,9 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         // Replace slack <@Uxxxx> user references with usernames, and emoji :xxxx: with unicode emoji
         // https://stackoverflow.com/questions/6222115/how-do-you-use-nsregularexpressions-replacementstringforresultinstringoffset
         var mutableText = text
+        if event.edited?.ts != nil {
+            mutableText = "(edited) \(mutableText)"
+        }
         var offset = 0
         for result in messageRegex.matches(in: text, options: [], range: NSRange(location: 0, length: text.count)) {
             let replacementValue: String?
@@ -232,13 +235,13 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             }
         }
 
-        if let attachments = message.attachments {
+        if let attachments = event.nestedMessage?.attachments ?? event.message?.attachments {
             for attachment in attachments {
-                if let title = attachment.title {
-                    mutableText.append(" " + title)
-                }
                 if let fallback = attachment.fallback {
                     mutableText.append(" " + fallback)
+                }
+                if let attachmentText = attachment.text {
+                    mutableText.append(" " + attachmentText)
                 }
                 if let imageURL = attachment.imageURL {
                     mutableText.append(" " + imageURL)
@@ -246,15 +249,12 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             }
         }
 
-        if let file = message.file {
+        if let file = event.nestedMessage?.file ?? event.message?.file {
             if let title = file.title {
                 mutableText.append(" " + title)
             }
-            if let thumb360 = file.thumb360 {
-                mutableText.append(" " + thumb360)
-            }
-            if let permalink = file.permalink {
-                mutableText.append(" File link: " + permalink)
+            if let urlPrivate = file.urlPrivate {
+                mutableText.append(" File link: " + urlPrivate)
             }
         }
 
@@ -267,7 +267,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
 
         let userName = client.users[slackUser]?.name ?? client.bots[slackUser]?.name ?? "unknown"
         ircClient.print(mutableText, by: userName, in: ircChannel, as: .privateMessage, command: TVCLogLineDefaultCommandValue, receivedAt: receivedAt, isEncrypted: false, referenceMessage: nil) { (context) in
-            if let ts = message.ts, let slackChannelInfo = self.ircChannels[ircChannel] {
+            if let ts = event.nestedMessage?.ts ?? event.message?.ts, let slackChannelInfo = self.ircChannels[ircChannel] {
                 slackChannelInfo.lastMessageTS = ts
             }
             // Don't mark our own messages as unread
