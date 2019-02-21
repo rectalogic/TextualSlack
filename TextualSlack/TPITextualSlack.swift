@@ -11,12 +11,15 @@ import Cocoa
 import SlackKit
 
 class SlackChannelInfo {
+    typealias MarkReadFunc = (_ channel: String, _ timestamp: String, _ success: ((String) -> Void)?, _ failure: WebAPI.FailureClosure?) -> ()
     let channelID: String
+    let markRead: MarkReadFunc
     var lastMessageTS: String?
     var lastMarkTS: String?
 
-    init(channelID: String) {
+    init(channelID: String, markRead: @escaping MarkReadFunc) {
         self.channelID = channelID
+        self.markRead = markRead
     }
 
     var needsMark: Bool {
@@ -156,14 +159,14 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
                         slackKit.addWebAPIAccessWithToken(token)
                     }
 
-                    if let clientConnection = slackKit.clients[token], let webAPI = clientConnection.webAPI {
+                    if let clientConnection = slackKit.clients[token], let webAPI = clientConnection.webAPI, let slackClient = clientConnection.client {
                         webAPI.channelsList(excludeArchived: true, excludeMembers: true, success: { (channels) in
                             if let channels = channels {
                                 DispatchQueue.main.async {
                                     for channel in channels {
-                                        if let channelID = channel["id"] as? String, let channelName = channel["name"] as? String, let isMember = channel["is_member"] as? Bool {
-                                            if isMember {
-                                                _ = self.ensureIRCChannel(ircClient: ircClient, slackTeamID: clientConnection.client?.team?.id, slackChannelID: channelID, slackChannelName: channelName)
+                                        if let channelID = channel["id"] as? String, let slackChannel = slackClient.channels[channelID] {
+                                            if slackChannel.isMember ?? false {
+                                                _ = self.ensureIRCChannel(ircClient: ircClient, webAPI: webAPI, slackTeamID: clientConnection.client?.team?.id, slackChannel: slackChannel)
                                             }
                                         }
                                     }
@@ -190,14 +193,15 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             let client = clientConnection?.client,
             let slackChannelID = event.nestedMessage?.channel ?? event.message?.channel,
             let slackChannel = client.channels[slackChannelID],
-            let slackChannelName = slackChannel.name,
             let slackUser = (event.nestedMessage?.user ?? event.message?.user) ?? (event.nestedMessage?.botID ?? event.message?.botID),
             let text = event.nestedMessage?.text ?? event.message?.text,
             let token = clientConnection?.rtm?.token,
-            let ircClient = ircClients[token] else {
+            let webAPI = clientConnection?.webAPI,
+            let ircClient = ircClients[token],
+            let ircChannel = ensureIRCChannel(ircClient: ircClient, webAPI: webAPI, slackTeamID: client.team?.id, slackChannel: slackChannel) else {
             return
         }
-        let ircChannel = ensureIRCChannel(ircClient: ircClient, slackTeamID: client.team?.id, slackChannelID: slackChannelID, slackChannelName: slackChannelName)
+
         let receivedAt: Date
         if let ts = event.nestedMessage?.ts ?? event.message?.ts, let tv = Double(ts) {
             receivedAt = Date(timeIntervalSince1970: tv)
@@ -289,7 +293,8 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
     }
 
     func interceptUserInput(_ input: Any, command: IRCRemoteCommand) -> Any? {
-        guard let token = masterController().mainWindow.selectedClient?.uniqueIdentifier,
+        guard
+            let token = masterController().mainWindow.selectedClient?.uniqueIdentifier,
             let selectedChannel = masterController().mainWindow.selectedChannel,
             let slackChannelInfo = ircChannels[selectedChannel],
             let clientConnection = slackKit.clients[token],
@@ -352,7 +357,16 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         }
     }
 
-    func ensureIRCChannel(ircClient: IRCClient, slackTeamID: String?, slackChannelID: String, slackChannelName: String) -> IRCChannel {
+    func ensureIRCChannel(ircClient: IRCClient, webAPI: WebAPI, slackTeamID: String?, slackChannel: Channel) -> IRCChannel? {
+        guard
+            let slackChannelID = slackChannel.id,
+            let slackChannelName = slackChannel.name else {
+                return nil
+        }
+        let markRead: SlackChannelInfo.MarkReadFunc =
+            (slackChannel.isIM ?? false)
+            ? webAPI.markIM
+            : ((slackChannel.isMPIM ?? false) ? webAPI.markMPIM : webAPI.markChannel)
         var topic = "https://slack.com/app_redirect?channel=\(slackChannelID)"
         if let slackTeamID = slackTeamID {
             topic += "&team=\(slackTeamID)"
@@ -361,7 +375,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         if let ircChannel = ircClient.findChannel(ircChannelName) {
             ircChannel.topic = topic
             if !ircChannels.keys.contains { $0 === ircChannel } {
-                ircChannels[ircChannel] = SlackChannelInfo(channelID: slackChannelID)
+                ircChannels[ircChannel] = SlackChannelInfo(channelID: slackChannelID, markRead: markRead)
             }
             if !ircChannel.isActive {
                 ircChannel.activate()
@@ -378,7 +392,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             ])
             let ircChannel = masterController().world.createChannel(with: config, on: ircClient)
             ircChannel.topic = topic
-            ircChannels[ircChannel] = SlackChannelInfo(channelID: slackChannelID)
+            ircChannels[ircChannel] = SlackChannelInfo(channelID: slackChannelID, markRead: markRead)
             ircChannel.activate()
             return ircChannel
         }
@@ -387,8 +401,8 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
     func ensureChannelsMarked() {
         for (ircChannel, slackChannelInfo) in ircChannels {
             if slackChannelInfo.needsMark && !ircChannel.isUnread {
-                if let ircClient = ircChannel.associatedClient, let clientConnection = slackKit.clients[ircClient.uniqueIdentifier], let webAPI = clientConnection.webAPI, let ts = slackChannelInfo.lastMessageTS {
-                    webAPI.markChannel(channel: slackChannelInfo.channelID, timestamp: ts, success: { (ts) in
+                if let ircClient = ircChannel.associatedClient, let clientConnection = slackKit.clients[ircClient.uniqueIdentifier], let ts = slackChannelInfo.lastMessageTS {
+                    slackChannelInfo.markRead(slackChannelInfo.channelID, ts, { (ts) in
                         slackChannelInfo.lastMarkTS = slackChannelInfo.lastMessageTS
                     }) { (error) in
                         self.logMessage(clientConnection: clientConnection) { (ircClient) in
