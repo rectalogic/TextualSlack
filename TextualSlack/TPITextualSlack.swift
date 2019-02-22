@@ -150,7 +150,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
                     }
                     ircClients[token] = ircClient
                     if let rtm = slackKit.clients[token]?.rtm {
-                        rtm.connect()
+                        rtm.connect(withInfo: false)
                     }
                     else {
                         slackKit.addRTMBotWithAPIToken(token, options: RTMOptions(reconnect: true))
@@ -159,26 +159,36 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
                         slackKit.addWebAPIAccessWithToken(token)
                     }
 
-                    if let clientConnection = slackKit.clients[token], let webAPI = clientConnection.webAPI, let slackClient = clientConnection.client {
-                        webAPI.channelsList(excludeArchived: true, excludeMembers: true, success: { (channels) in
-                            if let channels = channels {
-                                DispatchQueue.main.async {
-                                    for channel in channels {
-                                        if let channelID = channel["id"] as? String, let slackChannel = slackClient.channels[channelID] {
-                                            if slackChannel.isMember ?? false {
-                                                _ = self.ensureIRCChannel(ircClient: ircClient, webAPI: webAPI, slackTeamID: clientConnection.client?.team?.id, slackChannel: slackChannel)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }) { (error) in
+                    if let clientConnection = slackKit.clients[token], let webAPI = clientConnection.webAPI {
+                        let failureClosure: WebAPI.FailureClosure = { (error) in
                             DispatchQueue.main.async {
                                 self.logMessage(clientConnection: clientConnection) { (ircClient) in
                                     return "Error fetching channels: \(error)"
                                 }
                             }
                         }
+
+                        webAPI.channelsList(excludeArchived: true, excludeMembers: false, success: { (channels) in
+                            webAPI.imsList(excludeArchived: true, excludeMembers: false, success: { (ims) in
+                                webAPI.mpimsList(excludeArchived: true, excludeMembers: false, success: { (mpims) in
+                                    let allChannels = ((channels ?? []) + (ims ?? []) + (mpims ?? []))
+                                    let memberChannels = allChannels.filter({$0["is_member"] as? Bool ?? ($0["is_mpim"] as? Bool ?? ($0["is_im"] as? Bool ?? false))}).map {
+                                        Channel(channel: $0)
+                                    }
+                                    DispatchQueue.main.async {
+                                        for slackChannel in memberChannels {
+                                            _ = self.ensureIRCChannel(ircClient: ircClient, webAPI: webAPI, slackTeamID: clientConnection.client?.team?.id, slackChannel: slackChannel)
+                                        }
+                                        let ircChannelKeys = self.ircChannels.keys
+                                        for ircChannel in ircClient.channelList {
+                                            if !ircChannelKeys.contains(ircChannel) {
+                                                self.masterController().world.destroy(ircChannel)
+                                            }
+                                        }
+                                    }
+                                }, failure: failureClosure)
+                            }, failure: failureClosure)
+                        }, failure: failureClosure)
                     }
                 }
             }
