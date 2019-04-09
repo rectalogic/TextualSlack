@@ -223,9 +223,6 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
         // Replace slack <@Uxxxx> user references with usernames, and emoji :xxxx: with unicode emoji
         // https://stackoverflow.com/questions/6222115/how-do-you-use-nsregularexpressions-replacementstringforresultinstringoffset
         var mutableText = text
-        if event.edited?.ts != nil {
-            mutableText = "(edited) \(mutableText)"
-        }
         var offset = 0
         for result in messageRegex.matches(in: text, options: [], range: NSRange(location: 0, length: text.count)) {
             let replacementValue: String?
@@ -247,6 +244,20 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
                 // NSString.length is defined as "the number of UTF-16 code units", so replacementString must be defined in terms of utf16 too
                 offset += (replacementValue.utf16.count - resultRange.length)
             }
+        }
+
+        var threadEmoji: String? = nil
+        var editedEmoji: String? = nil
+        // Prefix with threadspool emoji if thread message
+        if (event.nestedMessage?.threadTs ?? event.message?.threadTs) != nil {
+            threadEmoji = "\u{0001f9f5}"
+        }
+        // Prefix with pencil emoji if edited
+        if (event.nestedMessage?.edited?.ts ?? event.message?.edited?.ts) != nil {
+            editedEmoji = "\u{270f}\u{fe0f}"
+        }
+        if threadEmoji != nil || editedEmoji != nil {
+            mutableText.insert("\(editedEmoji ?? "")\(threadEmoji ?? "")", at: mutableText.startIndex)
         }
 
         if let attachments = event.nestedMessage?.attachments ?? event.message?.attachments {
