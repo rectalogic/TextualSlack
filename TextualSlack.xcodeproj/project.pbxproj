@@ -219,7 +219,7 @@
 				TargetAttributes = {
 					C2F9641A2092781500D68C93 = {
 						CreatedOnToolsVersion = 9.3;
-						LastSwiftMigration = 1010;
+						LastSwiftMigration = 1130;
 					};
 				};
 			};
@@ -229,6 +229,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = C2F964122092781500D68C93;
 			productRefGroup = C2F9641C2092781500D68C93 /* Products */;
@@ -402,7 +403,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "TextualSlack-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				WRAPPER_EXTENSION = bundle;
 			};
@@ -435,7 +436,7 @@
 				SKIP_INSTALL = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "TextualSlack-Bridging-Header.h";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				WRAPPER_EXTENSION = bundle;
 			};

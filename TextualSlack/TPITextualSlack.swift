@@ -257,7 +257,7 @@ class TPITextualSlack: NSObject, THOPluginProtocol {
             editedEmoji = "\u{270f}\u{fe0f}"
         }
         if threadEmoji != nil || editedEmoji != nil {
-            mutableText.insert("\(editedEmoji ?? "")\(threadEmoji ?? "")", at: mutableText.startIndex)
+            mutableText.insert(contentsOf: "\(editedEmoji ?? "")\(threadEmoji ?? "")", at: mutableText.startIndex)
         }
 
         if let attachments = event.nestedMessage?.attachments ?? event.message?.attachments {
